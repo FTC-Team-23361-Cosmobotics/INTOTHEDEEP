@@ -27,15 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode.test;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-/*
+/**
  * This file contains an example of a Linear "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
  * The names of OpModes appear on the menu of the FTC Driver Station.
@@ -60,12 +59,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * the direction of all 4 motors (see code below).
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
+@TeleOp(name="Test: Omni Linear OpMode", group="Linear Opmode")
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
-
-public class BasicOmniOpMode_Linear extends LinearOpMode {
+public class TestSimpleBot extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -94,12 +92,12 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        // Wait for the game to start (driver presses START)
+        // Wait for the game to start (driver presses PLAY)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -145,12 +143,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             //      the setDirection() calls above.
             // Once the correct motors move in the correct direction re-comment this code.
 
-            /*
-            leftFrontPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
-            leftBackPower   = gamepad1.a ? 1.0 : 0.0;  // A gamepad
-            rightFrontPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
-            rightBackPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
-            */
+
+            leftFrontPower  = gamepad1.x ? 0.5 : 0.0;  // X gamepad
+            leftBackPower   = gamepad1.a ? 0.5 : 0.0;  // A gamepad
+            rightFrontPower = gamepad1.y ? 0.5 : 0.0;  // Y gamepad
+            rightBackPower  = gamepad1.b ? 0.5 : 0.0;  // B gamepad
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
