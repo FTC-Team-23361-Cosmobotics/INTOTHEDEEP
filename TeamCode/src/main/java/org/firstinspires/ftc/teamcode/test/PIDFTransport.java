@@ -42,22 +42,25 @@ public class PIDFTransport extends OpMode {
     public static double bucketPos;
     /*
     Notes:
-    Bucket //TODO: SWITCH THE SERVOS FOR BUCKET AND ROT
-    - Home - .87
-    - Score - .35
+    Bucket
+    - Home - .1
+    - Score - .7
     Rot
-    - Re-Program Got Messed Up
+    - Transfer - .95
+    - Intaking - .2
     Intake
     - Negative is Intake
     - Positive is Outtake
+    - .15
+    - -1
     Right Claw
     - Fully Open - .35
     - Stay in Sizing Tool - .4
     - Closed - .05
     Left Claw
-    - Fully Open - .4
-    - Stay in Sizing Tool - 0
-    - Closed - .2
+    - Fully Open - .65
+    - Stay in Sizing Tool - .2
+    - Closed - .4
 
     Extendo
     - P: .01
