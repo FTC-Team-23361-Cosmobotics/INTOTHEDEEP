@@ -47,25 +47,26 @@ public class Transport {
 //    //Safe, Deploy, Intaking, Intaking Off-Ground, Parallels (.5, 1st, 1.5, 2 - 3.5), Hang
 //    public static final double[] intakeRotPositions = {0, .9, .45, .42, .95, 1, .6};
 
-    public static final double leftClawOpen = .4;
-    public static final double leftClawSizing = 0;
-    public static final double leftClawClosed = .2;
+    public static final double leftClawOpen = .65;
+    public static final double leftClawSizing = .2;
+    public static final double leftClawClosed = .4;
 
     public static final double rightClawOpen = .35;
     public static final double rightClawSizing = .4;
     public static final double rightClawClosed = .05;
 
 
-    public static final double bucketHome = .87; //TODO: WILL CHANGE
-    public static final double bucketScore = .35;
+    public static final double bucketHome = .1; //TODO: WILL CHANGE
+    public static final double bucketScore = .7;
 
 
-    public static final double rotHome = -1; //TODO: WILL CHANGE
-    public static final double rotIntake = 1;
+    public static final double rotHome = .95; //TODO: WILL CHANGE
+    public static final double rotIntake = .2;
 
     public static final double intaking = -1;
     public static final double dormant = 0;
     public static final double outtaking = 1;
+    public static final double transfer = .15;
 
 
     public static double intakePower, leftClawPos, rightClawPos, bucketPos, rotPos;
@@ -168,7 +169,7 @@ public class Transport {
 
         leftClaw.setPosition(leftClawSizing);
         rightClaw.setPosition(rightClawSizing);
-        rot.setPosition(rotHome);
+        rot.setPosition(rotIntake);
         intake.setPower(dormant);
         bucket.setPosition(bucketHome);
     }
@@ -255,14 +256,18 @@ public class Transport {
             bucketPos = bucketHome;
         }
 
-        if (rotToggle.value() == true) {
+        if (rotToggle.value() == true || extendoPos > 2000) {
             rotPos = rotIntake;
         } else {
             rotPos = rotHome;
         }
 
         if (gamepad1.b) {
-            intakePower = outtaking;
+            if (extendoPos <= 50) {
+                intakePower = transfer;
+            } else {
+                intakePower = outtaking;
+            }
         } else if (rotPos == rotIntake) {
             intakePower = intaking;
         } else {
@@ -285,12 +290,32 @@ public class Transport {
             extendoTarget += 15;
         }
 
-        if (gamepad2.left_trigger > 0) {
-            outTarget -= 15;
+        if (gamepad2.left_trigger > 0 && extendoTarget > -100) {
+            outTarget -= 10;
         }
 
-        if (gamepad2.right_trigger > 0) {
+        if (gamepad2.right_trigger > 0 && extendoTarget > 3500) {
             outTarget += 15;
         }
+    }
+
+    public void setRot(double val) {
+        rotPos = val;
+    }
+
+    public void setBucket(double val) {
+        bucketPos = val;
+    }
+
+    public void setLeftClaw(double val) {
+        leftClawPos = val;
+    }
+
+    public void setRightClaw(double val) {
+        rightClawPos = val;
+    }
+
+    public void setIntakePower(double val) {
+        intakePower = val;
     }
 }
