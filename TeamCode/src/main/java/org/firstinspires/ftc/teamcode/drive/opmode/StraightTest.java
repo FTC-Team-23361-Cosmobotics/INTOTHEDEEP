@@ -18,13 +18,10 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @Autonomous(group = "drive")
 public class StraightTest extends LinearOpMode {
-    public ServoImplEx intakeRot;
     public static double DISTANCE = 60; // in
 
     @Override
     public void runOpMode() throws InterruptedException {
-        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
-        intakeRot.setPosition(.05);
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);

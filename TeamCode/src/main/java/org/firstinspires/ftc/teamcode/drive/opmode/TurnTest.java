@@ -14,14 +14,11 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @Autonomous(group = "drive")
 public class TurnTest extends LinearOpMode {
-    public ServoImplEx intakeRot;
 
     public static double ANGLE = 180; // deg
 
     @Override
     public void runOpMode() throws InterruptedException {
-        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
-        intakeRot.setPosition(.05);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         waitForStart();

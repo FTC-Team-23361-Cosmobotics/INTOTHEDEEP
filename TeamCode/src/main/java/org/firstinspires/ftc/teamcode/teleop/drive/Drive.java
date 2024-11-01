@@ -59,8 +59,8 @@ public class Drive {
         imu = hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.UP));
         // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
         imu.initialize(parameters);
         imu.resetYaw();
@@ -74,7 +74,7 @@ public class Drive {
 
     public void update(Gamepad gamepad1) {
         if (RobotCentric == false) {
-            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + IMUOffset;
+            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             //Field Centric Drive:
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x;
@@ -94,19 +94,11 @@ public class Drive {
             }
 
             //Autoturn Logic:
-            if (gamepad1.left_bumper) {
-                if (isRed) {
-                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
-                } else {
-                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(315));
-                }
-            }
             if (gamepad1.right_bumper) {
-                if (isRed) {
-                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(225));
-                } else {
                     rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
-                }
+            }
+            if (gamepad1.left_bumper) {
+                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(325));
             }
 
             double frontLeftPower = (rotY + rotX + rx) / denominator;

@@ -56,8 +56,8 @@ public class Transport {
     public static final double rightClawClosed = .05;
 
 
-    public static final double bucketHome = .1; //TODO: WILL CHANGE
-    public static final double bucketScore = .7;
+    public static final double bucketHome = .15; //TODO: WILL CHANGE
+    public static final double bucketScore = .6;
 
 
     public static final double rotHome = .95; //TODO: WILL CHANGE
@@ -66,7 +66,7 @@ public class Transport {
     public static final double intaking = -1;
     public static final double dormant = 0;
     public static final double outtaking = 1;
-    public static final double transfer = .15;
+    public static final double transfer = .2;
 
 
     public static double intakePower, leftClawPos, rightClawPos, bucketPos, rotPos;
@@ -167,8 +167,8 @@ public class Transport {
 
         rightClaw.setDirection(Servo.Direction.REVERSE);
 
-        leftClaw.setPosition(leftClawSizing);
-        rightClaw.setPosition(rightClawSizing);
+        leftClaw.setPosition(leftClawClosed);
+        rightClaw.setPosition(rightClawClosed);
         rot.setPosition(rotIntake);
         intake.setPower(dormant);
         bucket.setPosition(bucketHome);
@@ -231,7 +231,7 @@ public class Transport {
 
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
         clawToggle.update(gamepad1.y);
-        bucketToggle.update(gamepad1.x);
+        bucketToggle.update(gamepad2.x);
         rotToggle.update(gamepad1.a);
 
         outController.setPID(outp, outi, outd);
@@ -262,7 +262,7 @@ public class Transport {
             rotPos = rotHome;
         }
 
-        if (gamepad1.b) {
+        if (gamepad2.b) {
             if (extendoPos <= 50) {
                 intakePower = transfer;
             } else {
@@ -286,16 +286,27 @@ public class Transport {
             extendoTarget -= 15;
         }
 
-        if (gamepad1.right_trigger > 0 && extendoTarget < 2315) {
+        if (gamepad1.right_trigger > 0 && extendoTarget < 2015) {
             extendoTarget += 15;
         }
 
-        if (gamepad2.left_trigger > 0 && extendoTarget > -100) {
+        if (gamepad2.left_trigger > 0) {
             outTarget -= 10;
         }
 
-        if (gamepad2.right_trigger > 0 && extendoTarget > 3500) {
+        if (gamepad2.right_trigger > 0) {
             outTarget += 15;
+        }
+
+        if (gamepad2.left_bumper) {
+            outTarget = -200;
+        }
+        if (gamepad2.right_bumper) {
+            outTarget = 3000;
+        }
+        if (gamepad2.y) {
+            out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
 
@@ -317,5 +328,20 @@ public class Transport {
 
     public void setIntakePower(double val) {
         intakePower = val;
+    }
+
+    public void setExtendoTarget(int val) {
+        extendoTarget = val;
+    }
+
+    public void setOutTarget(int val) {
+        outTarget = val;
+    }
+
+    public void reverseExtendoDir() {
+        out.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+    public void forwardExtendoDir() {
+        out.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 }

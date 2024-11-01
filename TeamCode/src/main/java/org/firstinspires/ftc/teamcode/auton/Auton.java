@@ -1,51 +1,56 @@
-//package org.firstinspires.ftc.teamcode.auton;
-//import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
-//
-//import android.util.Size;
-//
-//import com.acmerobotics.dashboard.config.Config;
-//import com.acmerobotics.roadrunner.geometry.Pose2d;
-//import com.acmerobotics.roadrunner.geometry.Vector2d;
-//import com.qualcomm.robotcore.hardware.HardwareMap;
-//import com.qualcomm.robotcore.util.RobotLog;
-//
-//import org.firstinspires.ftc.robotcore.external.Telemetry;
-//import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-//import org.firstinspires.ftc.teamcode.auton.pipeline.SpikePosDetector;
-//import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-//import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
-//import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-//import org.firstinspires.ftc.vision.VisionPortal;
-//import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-//import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-//
-//import java.util.List;
-//
-//@Config
-//public class Auton {
+package org.firstinspires.ftc.teamcode.auton;
+import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
+
+import android.util.Size;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.RobotLog;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.auton.pipeline.SpikePosDetector;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
+
+public class Auton {
 //    public SpikePosDetector.SPIKE_POS spikePos;
 //    private SpikePosDetector pipeline;
 //    private VisionPortal vision;
-////    private AprilTagProcessor aprilTag;
-//    private Transport transport;
-//    private SampleMecanumDrive drive;
-////    public final Vector2d[] tagPositions = new Vector2d[] {
-////            new Vector2d(62, 41.5),
-////            new Vector2d(62, 35.5),
-////            new Vector2d(62, 29.5),
-////            new Vector2d(62,-29.5),
-////            new Vector2d(62,-35.5),
-////            new Vector2d(62, -41.5),
-////    };
-////    //TODO: TUNE DELTAF (A VECTOR REPRESENTING THE DISTANCE FROM THE CENTER OF BOT THE CAMERA IS
-////    public final Vector2d deltaF = new Vector2d(7.5,4.5);
-//    public Pose2d blueLeftBoard, blueCenterBoard, blueRightBoard, redLeftBoard, redCenterBoard, redRightBoard, blueLeftClose, blueCenterClose, blueRightClose, redLeftClose, redCenterClose, redRightClose, blueLeftStack, redRightStack, blueParkLeft, blueParkRight, redParkLeft, redParkRight, blueLeftStackPrep, redRightStackPrep;
-//    public boolean isLeftClaw;
+//    private AprilTagProcessor aprilTag;
+    private Transport transport;
+    private SampleMecanumDrive drive;
+//    public final Vector2d[] tagPositions = new Vector2d[] {
+//            new Vector2d(62, 41.5),
+//            new Vector2d(62, 35.5),
+//            new Vector2d(62, 29.5),
+//            new Vector2d(62,-29.5),
+//            new Vector2d(62,-35.5),
+//            new Vector2d(62, -41.5),
+//    };
+//    //TODO: TUNE DELTAF (A VECTOR REPRESENTING THE DISTANCE FROM THE CENTER OF BOT THE CAMERA IS
+//    public final Vector2d deltaF = new Vector2d(7.5,4.5);
 //
-//    public Auton(HardwareMap hardwareMap) {
-//        //TODO: TUNE POSITIONS
-//        //Board Positions:
-//        //Syntax: Alliance, Position, Board
+    public Pose2d StartPose, bucketPose, firstSamplePose, mainSamplePose, specimenPose;
+    public boolean isLeftClaw;
+
+    public Auton(HardwareMap hardwareMap) {
+        //TODO: TUNE POSITIONS
+        //Board Positions:
+        //Syntax: Alliance, Position, Board
+        Pose2d StartPose = new Pose2d(-22, -60, Math.toRadians(270));
+        Pose2d specimenPose = new Pose2d(-9, -35, Math.toRadians(270));
+        Pose2d bucketPose = new Pose2d(-52,-53, Math.toRadians(45));
+        Pose2d firstSamplePose = new Pose2d( -25, -34, Math.toRadians(160));
+        Pose2d mainSamplePose = new Pose2d(-38, -25, Math.toRadians(180));
 //        blueLeftBoard = new Pose2d(30, 40, Math.toRadians(176.5));
 //        blueCenterBoard = new Pose2d(30, 34, Math.toRadians(176.5));
 //        blueRightBoard = new Pose2d(30, 28, Math.toRadians(176.5));
@@ -71,9 +76,9 @@
 //        blueLeftStack = new Pose2d(-14, 28, Math.toRadians(176.5));
 //        redRightStackPrep = new Pose2d(10, -36, Math.toRadians(183.25));
 //        redRightStack = new Pose2d(-14, -35, Math.toRadians(183.25));
-//
-////        aprilTag = new AprilTagProcessor.Builder()
-////                .build();
+
+//        aprilTag = new AprilTagProcessor.Builder()
+//                .build();
 //        pipeline = new SpikePosDetector();
 //        spikePos = pipeline.getType();
 //        vision = new VisionPortal.Builder()
@@ -84,9 +89,10 @@
 //                .enableLiveView(true)
 //                .setAutoStopLiveView(true)
 //                .build();
-//        drive = new SampleMecanumDrive(hardwareMap);
-//        transport = new Transport(hardwareMap);
-//    }
+        drive = new SampleMecanumDrive(hardwareMap);
+        transport = new Transport(hardwareMap);
+    }
+
 //
 ////    public AprilTagDetection assignID (){
 ////        int idNum=0;
@@ -175,13 +181,13 @@
 //    public void vision() {
 //        spikePos = pipeline.getType();
 //    }
-//    public SampleMecanumDrive drive() {
-//        return drive;
-//    }
-//
-//    public Transport transport() {
-//        return transport;
-//    }
+    public SampleMecanumDrive drive() {
+        return drive;
+    }
+
+    public Transport transport() {
+        return transport;
+    }
 //
 //    public Boolean leftClaw() {
 //        return isLeftClaw;
@@ -403,4 +409,4 @@
 //    }
 //
 //
-//}
+}

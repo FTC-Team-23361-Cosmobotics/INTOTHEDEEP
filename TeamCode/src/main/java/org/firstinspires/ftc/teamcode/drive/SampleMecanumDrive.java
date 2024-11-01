@@ -58,7 +58,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(9, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(9, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1.03796747;
+    public static double LATERAL_MULTIPLIER = 0.97207236302;
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -292,11 +292,13 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
+
         return 0;
     }
 
     @Override
     public Double getExternalHeadingVelocity() {
+
         return 0.0;
     }
 

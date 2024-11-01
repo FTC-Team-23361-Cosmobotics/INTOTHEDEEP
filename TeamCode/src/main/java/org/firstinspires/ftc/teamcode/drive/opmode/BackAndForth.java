@@ -28,13 +28,10 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @Autonomous(group = "drive")
 public class BackAndForth extends LinearOpMode {
-    public ServoImplEx intakeRot;
     public static double DISTANCE = 50;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
-        intakeRot.setPosition(.05);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory trajectoryForward = drive.trajectoryBuilder(new Pose2d())

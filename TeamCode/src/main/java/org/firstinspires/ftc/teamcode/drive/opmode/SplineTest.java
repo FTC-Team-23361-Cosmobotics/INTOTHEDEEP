@@ -16,11 +16,8 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Autonomous(group = "drive")
 public class
 SplineTest extends LinearOpMode {
-    public ServoImplEx intakeRot;
     @Override
     public void runOpMode() throws InterruptedException {
-        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
-        intakeRot.setPosition(.05);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         waitForStart();

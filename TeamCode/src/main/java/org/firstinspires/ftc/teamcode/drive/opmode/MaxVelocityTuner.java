@@ -28,7 +28,6 @@ import java.util.Objects;
 @Config
 @Autonomous(group = "drive")
 public class MaxVelocityTuner extends LinearOpMode {
-    public ServoImplEx intakeRot;
     public static double RUNTIME = 2.0;
 
     private ElapsedTime timer;
@@ -38,8 +37,6 @@ public class MaxVelocityTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        intakeRot = hardwareMap.get(ServoImplEx.class, "intakeRotation");
-        intakeRot.setPosition(.05);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 

@@ -10,16 +10,21 @@ import org.rowlandhall.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 public class MeepMeepTesting {
     public static void main(String[] args) {
         Pose2d StartBlueBucketPose = new Pose2d(22, 60, Math.toRadians(270));
-        Pose2d StartRedBucketPose = new Pose2d(-22, -60, Math.toRadians(270));
-        Pose2d StartBlueObsPose = new Pose2d(-22, 60, Math.toRadians(270));
-        Pose2d StartRedObsPose = new Pose2d(22, -60, Math.toRadians(90));
+//        Pose2d StartBlueObsPose = new Pose2d(-22, 60, Math.toRadians(270));
+//        Pose2d StartRedObsPose = new Pose2d(22, -60, Math.toRadians(90));
+        Pose2d StartPose = new Pose2d(-22, -60, Math.toRadians(270));
+        Pose2d specimenPose = new Pose2d(-9, -35, Math.toRadians(270));
+        Pose2d bucketPose = new Pose2d(-52,-53, Math.toRadians(45));
+        Pose2d firstSamplePose = new Pose2d( -25, -34, Math.toRadians(160));
+        Pose2d mainSamplePose = new Pose2d(-38, -25, Math.toRadians(180));
+
 
         MeepMeep meepMeep = new MeepMeep(800);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(100, 100, Math.toRadians(180), Math.toRadians(180), 15)
-                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(StartRedBucketPose)
+                .setConstraints(60.646780560809674, 30, Math.toRadians(180), Math.toRadians(180), 15)
+                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(StartPose)
                         .lineToSplineHeading(new Pose2d(-9, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
                         //.lineTo(new Vector2d(-34,-36))
