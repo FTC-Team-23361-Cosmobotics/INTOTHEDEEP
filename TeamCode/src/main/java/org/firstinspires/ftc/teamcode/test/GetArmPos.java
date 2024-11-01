@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp
-public class GetArmPos extends LinearOpMode{
+public class    GetArmPos extends LinearOpMode{
     @Override
     public void runOpMode() {
         DcMotor armMotor = hardwareMap.dcMotor.get("ArmMotor");

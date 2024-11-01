@@ -9,10 +9,19 @@ import org.rowlandhall.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
+
         Pose2d StartBlueBucketPose = new Pose2d(22, 60, Math.toRadians(270));
         Pose2d StartRedBucketPose = new Pose2d(-22, -60, Math.toRadians(270));
         Pose2d StartBlueObsPose = new Pose2d(-22, 60, Math.toRadians(270));
         Pose2d StartRedObsPose = new Pose2d(22, -60, Math.toRadians(90));
+        Pose2d BucketPose = new Pose2d(-52,-53, Math.toRadians(45));
+
+        final double BucketPoseX = -52;
+        final double BucketPoseY = -53;
+        final double BucketPoseAngle = Math.toRadians(45);
+        final double SampleOneAngle = Math.toRadians(82);
+        final double SampleTwoAngle = Math.toRadians(100);
+
 
         MeepMeep meepMeep = new MeepMeep(800);
 
@@ -22,29 +31,15 @@ public class MeepMeepTesting {
                 .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(StartRedBucketPose)
                         .lineToSplineHeading(new Pose2d(-9, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
-                        //.lineTo(new Vector2d(-34,-36))
-                        .splineToSplineHeading(new Pose2d( -25, -34, Math.toRadians(160)), Math.toRadians(135))
+                        .lineToSplineHeading(new Pose2d(BucketPoseX, BucketPoseY, SampleOneAngle))
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
+                        .turn(BucketPoseAngle - SampleOneAngle)
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d( -38, -25, Math.toRadians(180)))
+                        .turn(SampleTwoAngle - BucketPoseAngle)
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
-                        .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d( -38, -25, Math.toRadians(180)))
-                        .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
+                        .turn(BucketPoseAngle - SampleTwoAngle)
                         .waitSeconds(0.5)
 
-                        /*
-                        .lineToSplineHeading(new Pose2d(-35,-25, Math.toRadians(180)))
-                        .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
-                        .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-45,-25, Math.toRadians(180)))
-                        .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
-                        .waitSeconds(0.5)*/
                         .build());
 
 
