@@ -29,8 +29,8 @@ public class PIDFTransport extends OpMode {
     public static double outp = 0.007, outi = 0, outd = 0.0004;
     public static int outTarget = 0;
 
-    private ServoImplEx rot, leftClaw, rightClaw, bucket;
-    private CRServoImplEx intake;
+    private ServoImplEx rot, bucket;
+    private CRServoImplEx intake, leftClaw, rightClaw;
 
     public static double rotPos;
 
@@ -81,10 +81,8 @@ public class PIDFTransport extends OpMode {
     @Override
     public void init() {
         drive = new Drive(hardwareMap);
-        leftClaw = hardwareMap.get(ServoImplEx.class, "leftClaw");
-        rightClaw = hardwareMap.get(ServoImplEx.class, "rightClaw");
-
-        rightClaw.setDirection(Servo.Direction.REVERSE);
+        leftClaw = hardwareMap.get(CRServoImplEx.class, "leftClaw");
+        rightClaw = hardwareMap.get(CRServoImplEx.class, "rightClaw");
 
         rot = hardwareMap.get(ServoImplEx.class, "rot");
         intake = hardwareMap.get(CRServoImplEx.class, "intake");
@@ -111,8 +109,8 @@ public class PIDFTransport extends OpMode {
         drive.update(gamepad1);
         rot.setPosition(rotPos);
         intake.setPower(intakePower);
-        leftClaw.setPosition(leftClawPos);
-        rightClaw.setPosition(rightClawPos);
+        leftClaw.setPower(leftClawPos);
+        rightClaw.setPower(rightClawPos);
         bucket.setPosition(bucketPos);
 
         outController.setPID(outp, outi, outd);
