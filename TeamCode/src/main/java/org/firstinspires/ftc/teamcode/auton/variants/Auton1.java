@@ -81,13 +81,13 @@ public class Auton1 extends LinearOpMode {
         TrajectorySequence specimen = drive.trajectorySequenceBuilder(StartPose)
                 .lineToSplineHeading(specimenPose)
                 .addDisplacementMarker(() -> {
-                    transport.setLeftClaw(.4);
-                    transport.setRightClaw(.05);
+//                    transport.setLeftClaw(.4);
+//                    transport.setRightClaw(.05);
                     transport.setRot(.2);
                     transport.setOutTarget(HighSpecimen);
                 })
                 .addDisplacementMarker(ScoreSpecimenDisp, () -> {
-                    transport.setBucket(.15);
+                    transport.setOutArm(.15);
                     transport.setOutTarget(0);
                 })
                 .build();
@@ -97,7 +97,7 @@ public class Auton1 extends LinearOpMode {
                 .addTemporalMarker(() -> {
                     transport.setRot(.2);
                     transport.setExtendoTarget(Ex);
-                    transport.setIntakePower(-1);
+//                    transport.setIntakePower(-1);
                 })
                 .waitSeconds(intakeWait)
                 .addTemporalMarker(() -> {
@@ -109,7 +109,7 @@ public class Auton1 extends LinearOpMode {
         TrajectorySequence firstbucket = drive.trajectorySequenceBuilder(firstSamplePose)
                 .lineToSplineHeading(bucketPose)
                 .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-                    transport.setIntakePower(.7);
+//                    transport.setIntakePower(.7);
                 })
                 .waitSeconds(transferWait)
                 .addTemporalMarker(() -> {
@@ -117,11 +117,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.6);
+                    transport.setOutArm(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.15);
+                    transport.setOutArm(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)
@@ -131,20 +131,20 @@ public class Auton1 extends LinearOpMode {
                 .addTemporalMarker(() -> {
                     transport.setRot(.2);
                     transport.setExtendoTarget(Ex);
-                    transport.setIntakePower(-1);
+//                    transport.setIntakePower(-1);
                 })
                 .waitSeconds(intakeWait)
                 .addTemporalMarker(() -> {
                     transport.setRot(.925);
                     transport.setExtendoTarget(0);
-                    transport.setIntakePower(0);
+//                    transport.setIntakePower(0);
                 })
                 .waitSeconds(retractWait)
                 .build();
         TrajectorySequence secondBucket = drive.trajectorySequenceBuilder(secondSamplePose)
                 .lineToSplineHeading(bucketPose)
                 .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-                    transport.setIntakePower(.7);
+//                    transport.setIntakePower(.7);
                 })
                 .waitSeconds(transferWait)
                 .addTemporalMarker(() -> {
@@ -152,11 +152,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.6);
+                    transport.setOutArm(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.15);
+                    transport.setOutArm(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)
@@ -166,20 +166,20 @@ public class Auton1 extends LinearOpMode {
                 .addTemporalMarker(() -> {
                     transport.setRot(.2);
                     transport.setExtendoTarget(Ex);
-                    transport.setIntakePower(-1);
+//                    transport.setIntakePower(-1);
                 })
                 .waitSeconds(intakeWait)
                 .addTemporalMarker(() -> {
                     transport.setRot(.925);
                     transport.setExtendoTarget(0);
-                    transport.setIntakePower(0);
+//                    transport.setIntakePower(0);
                 })
                 .waitSeconds(retractWait)
                 .build();
         TrajectorySequence thirdBucket = drive.trajectorySequenceBuilder(thirdSamplePose)
                 .lineToSplineHeading(bucketPose)
                 .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-                    transport.setIntakePower(.7);
+//                    transport.setIntakePower(.7);
                 })
                 .waitSeconds(transferWait)
                 .addTemporalMarker(() -> {
@@ -187,11 +187,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.6);
+                    transport.setOutArm(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setBucket(.15);
+                    transport.setOutArm(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)

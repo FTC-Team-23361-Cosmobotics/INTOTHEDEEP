@@ -29,38 +29,31 @@ public class PIDFTransport extends OpMode {
     public static double outp = 0.007, outi = 0, outd = 0.0004;
     public static int outTarget = 0;
 
-    private ServoImplEx rot, bucket;
-    private CRServoImplEx intake, leftClaw, rightClaw;
+    private ServoImplEx outClaw, rot, outArm;
+    private CRServoImplEx leftRot, rightRot;
 
     public static double rotPos;
 
-    public static double intakePower;
+    public static double outClawPos;
 
-    public static double leftClawPos;
-    public static double rightClawPos;
+    public static double leftRotPower;
+    public static double rightRotPower;
 
-    public static double bucketPos;
+    public static double outArmPos;
     /*
     Notes:
-    Bucket
+    OutArm
     - Home - .1
     - Score - .7
-    Rot
-    - Transfer - .95
-    - Intaking - .2
-    Intake
-    - Negative is Intake
-    - Positive is Outtake
-    - .15
-    - -1
-    Right Claw
-    - Fully Open - .35
-    - Stay in Sizing Tool - .4
-    - Closed - .05
-    Left Claw
-    - Fully Open - .65
-    - Stay in Sizing Tool - .2
-    - Closed - .4
+    Claw //TODO: TUNE
+    - Open -
+    - Closed -
+    Right Intake //TODO: TUNE
+    - Negative is
+    - Positive is
+    Left Intake //TODO: TUNE
+    - Negative is
+    - Positive is
 
     Extendo
     - P: .01
@@ -81,13 +74,13 @@ public class PIDFTransport extends OpMode {
     @Override
     public void init() {
         drive = new Drive(hardwareMap);
-        leftClaw = hardwareMap.get(CRServoImplEx.class, "leftClaw");
-        rightClaw = hardwareMap.get(CRServoImplEx.class, "rightClaw");
+        leftRot = hardwareMap.get(CRServoImplEx.class, "leftRot");
+        rightRot = hardwareMap.get(CRServoImplEx.class, "rightRot");
 
         rot = hardwareMap.get(ServoImplEx.class, "rot");
-        intake = hardwareMap.get(CRServoImplEx.class, "intake");
 
-        bucket = hardwareMap.get(ServoImplEx.class, "bucket");
+        outClaw = hardwareMap.get(ServoImplEx.class, "outClaw");
+        outArm = hardwareMap.get(ServoImplEx.class, "outArm");
 
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
@@ -108,10 +101,10 @@ public class PIDFTransport extends OpMode {
     public void loop() {
         drive.update(gamepad1);
         rot.setPosition(rotPos);
-        intake.setPower(intakePower);
-        leftClaw.setPower(leftClawPos);
-        rightClaw.setPower(rightClawPos);
-        bucket.setPosition(bucketPos);
+        outClaw.setPosition(outClawPos);
+        leftRot.setPower(leftRotPower);
+        rightRot.setPower(rightRotPower);
+        outArm.setPosition(outArmPos);
 
         outController.setPID(outp, outi, outd);
         int outPos = out.getCurrentPosition();

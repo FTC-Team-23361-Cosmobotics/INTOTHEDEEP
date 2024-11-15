@@ -21,9 +21,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 public class Transport {
-    private Toggle clawToggle, bucketToggle, rotToggle;
-    private ServoImplEx leftClaw, rightClaw, rot, bucket;
-    private CRServoImplEx intake;
+    private Toggle clawToggle, outtakeToggle, rotToggle, driv2;
+    private ServoImplEx outClaw, rot, outArm;
+    private CRServoImplEx leftRot, rightRot;
 
     private DcMotorEx extendo, out;
     private PIDController extendoController;
@@ -47,29 +47,23 @@ public class Transport {
 //    //Safe, Deploy, Intaking, Intaking Off-Ground, Parallels (.5, 1st, 1.5, 2 - 3.5), Hang
 //    public static final double[] intakeRotPositions = {0, .9, .45, .42, .95, 1, .6};
 
-    public static final double leftClawOpen = .65;
-    public static final double leftClawSizing = .2;
-    public static final double leftClawClosed = .4;
-
-    public static final double rightClawOpen = .35;
-    public static final double rightClawSizing = .4;
-    public static final double rightClawClosed = .05;
+    public static final double clawOpen = 1; //TODO: TUNE THESE
+    public static final double clawClosed = 0;
 
 
-    public static final double bucketHome = .15; //TODO: WILL CHANGE
-    public static final double bucketScore = .6;
+    public static final double outArmHome = .15;
+    public static final double outArmScore = .6; //TODO: TUNE
 
 
-    public static final double rotHome = .95; //TODO: WILL CHANGE
+    public static final double rotHome = .95;
     public static final double rotIntake = .2;
 
-    public static final double intaking = -1;
-    public static final double dormant = 0;
-    public static final double outtaking = 1;
-    public static final double transfer = .2;
 
+    public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
 
-    public static double intakePower, leftClawPos, rightClawPos, bucketPos, rotPos;
+    public static final int highBucket = 3500; //TODO: TUNE VVV
+    public static final int lowBucket = 1500;
+    public static final int highBar = 2000;
 
 //    public boolean armInRange;
 //    public boolean slidesInRange;
@@ -141,8 +135,9 @@ public class Transport {
 
     public Transport(HardwareMap hardwareMap) {
         clawToggle = new Toggle(false);
-        bucketToggle = new Toggle(false);
+        outtakeToggle = new Toggle(false);
         rotToggle = new Toggle(false);
+        driv2 = new Toggle(false);
 
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
@@ -159,19 +154,17 @@ public class Transport {
         outController.setPID(outp, outi, outd);
         outPos = out.getCurrentPosition();
 
-        leftClaw = hardwareMap.get(ServoImplEx.class, "leftClaw");
-        rightClaw = hardwareMap.get(ServoImplEx.class, "rightClaw");
+        leftRot = hardwareMap.get(CRServoImplEx.class, "leftRot");
+        rightRot = hardwareMap.get(CRServoImplEx.class, "rightRot");
         rot = hardwareMap.get(ServoImplEx.class, "rot");
-        intake = hardwareMap.get(CRServoImplEx.class, "intake");
-        bucket = hardwareMap.get(ServoImplEx.class, "bucket");
+        outClaw = hardwareMap.get(ServoImplEx.class, "outClaw");
+        outArm = hardwareMap.get(ServoImplEx.class, "outArm");
 
-        rightClaw.setDirection(Servo.Direction.REVERSE);
-
-        leftClaw.setPosition(leftClawClosed);
-        rightClaw.setPosition(rightClawClosed);
+        leftRot.setPower(0);
+        rightRot.setPower(0);
         rot.setPosition(rotIntake);
-        intake.setPower(dormant);
-        bucket.setPosition(bucketHome);
+        outClaw.setPosition(clawClosed);
+        outArm.setPosition(outArmHome);
     }
 
 
@@ -222,17 +215,18 @@ public class Transport {
         double extendopid = extendoController.calculate(extendoPos, extendoTarget);
         extendo.setPower(extendopid);
 
+        leftRot.setPower(leftRotPower);
+        rightRot.setPower(rightRotPower);
         rot.setPosition(rotPos);
-        intake.setPower(intakePower);
-        leftClaw.setPosition(leftClawPos);
-        rightClaw.setPosition(rightClawPos);
-        bucket.setPosition(bucketPos);
+        outClaw.setPosition(outClawPos);
+        outArm.setPosition(outArmPos);
     }
 
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
-        clawToggle.update(gamepad1.y);
-        bucketToggle.update(gamepad2.x);
-        rotToggle.update(gamepad1.a);
+        clawToggle.update(gamepad2.y);
+        outtakeToggle.update(gamepad2.x);
+        rotToggle.update(gamepad2.a);
+        driv2.update(gamepad1.back);
 
         outController.setPID(outp, outi, outd);
         int outPos = out.getCurrentPosition();
@@ -244,42 +238,56 @@ public class Transport {
         double extendopid = extendoController.calculate(extendoPos, extendoTarget);
         extendo.setPower(extendopid);
 
+        leftRot.setPower(leftRotPower);
+        rightRot.setPower(rightRotPower);
         rot.setPosition(rotPos);
-        intake.setPower(intakePower);
-        leftClaw.setPosition(leftClawPos);
-        rightClaw.setPosition(rightClawPos);
-        bucket.setPosition(bucketPos);
+        outClaw.setPosition(outClawPos);
+        outArm.setPosition(outArmPos);
 
-        if (bucketToggle.value() == true) {
-            bucketPos = bucketScore;
+        if (outtakeToggle.value() == true) {
+            outArmPos = outArmScore;
         } else {
-            bucketPos = bucketHome;
+            outArmPos = outArmHome;
         }
 
-        if (rotToggle.value() == true || extendoPos > 2000) {
+        if (rotToggle.value() == true) { // || extendoPos > 2000
             rotPos = rotIntake;
         } else {
             rotPos = rotHome;
         }
 
-        if (gamepad2.b) {
-            if (extendoPos <= 50) {
-                intakePower = transfer;
-            } else {
-                intakePower = outtaking;
-            }
-        } else if (rotPos == rotIntake) {
-            intakePower = intaking;
-        } else {
-            intakePower = dormant;
+        if (gamepad1.b) {
+            intake(1);
+        }
+
+        if (gamepad1.x) {
+            outtake(1);
+        }
+
+        if (gamepad1.a) {
+            intake(0);
+        }
+
+        if (gamepad1.y) {
+            transfer();
+        }
+
+        if (gamepad1.left_bumper) {
+            highBucket();
+        }
+
+        if (gamepad1.right_bumper) {
+            highBar();
+        }
+
+        if (gamepad2.y) {
+            lowBucket();
         }
 
         if (clawToggle.value() == true) {
-            leftClawPos = leftClawClosed;
-            rightClawPos = rightClawClosed;
+            outClawPos = clawOpen;
         } else {
-            leftClawPos = leftClawOpen;
-            rightClawPos = rightClawOpen;
+            outClawPos = clawClosed;
         }
 
         if (gamepad1.left_trigger > 0 && extendoTarget > -30) {
@@ -297,37 +305,99 @@ public class Transport {
         if (gamepad2.right_trigger > 0) {
             outTarget += 15;
         }
+       //FULL DRIVER2 CONTROL
+        if (driv2.value() == true) {
+            //TODO: FILL WITH SAME CONTROLS AS DRIVER 1 BUT FOR DRIVER 2
+        }
 
-        if (gamepad2.left_bumper) {
-            outTarget = -200;
-        }
-        if (gamepad2.right_bumper) {
-            outTarget = 3000;
-        }
-        if (gamepad2.y) {
+//        if (gamepad2.left_bumper) {
+//            extendoTarget -= 15;
+//        }
+//        if (gamepad2.right_bumper) {
+//            extendoTarget += 1500;
+//        }
+        if (gamepad2.b) {
             out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
 
+    //Extendo is Dynamic: Gamepad 1 Triggers
+    //Outtake Slides are Automatic: Transfer, then - low bucket - **gamepad2.y**, high bucket - left bumper, high rung - right bumper
+    //Reset Intake - Gamepad1.y
+    //Score/Reset Out is One Button: Gamepad1.a
+    //gamepad1.x flip down and start intaking, unless gamepad1.b which ejects
+    //transfer does not transfer unless slides are reset
+    //
+    // Gamepad2 is backups, that can be triggered by gamepad1 (if gamepad1 dcs gamepad2 auto becomes gamepad1)
+    public void resetIntake() {
+        extendoTarget = 0;
+        rotPos = rotHome;
+        intake(0);
+    }
+
+    public void resetOut() {
+        outPos = -200;
+        outArmPos = outArmHome;
+        outClawPos = clawOpen;
+    }
+    public void lowBucket() {
+        transfer();
+        outArmPos = outArmScore;
+        outTarget = lowBucket;
+    }
+
+    public void highBucket() {
+        transfer();
+        outArmPos = outArmScore;
+        outTarget = highBucket;
+    }
+
+    public void highBar() {
+        transfer();
+        outArmPos = outArmScore;
+        outTarget = highBar;
+    }
+
+//    public void setLeftClaw(double val) {
+//        leftClawPos = val;
+//    }
+//
+//    public void setRightClaw(double val) {
+//        rightClawPos = val;
+//    }
+
+    public void transfer() {
+        //outtake(.35);
+        outClawPos = clawClosed;
+        rotPos = rotIntake;
+    }
+
+    public void reset() {
+        leftRotPower = 0;
+        rightRotPower = 0;
+        rotPos = rotIntake;
+        outClawPos = clawOpen;
+    }
+    public void setClawPos(double val) {
+        outClawPos = val;
+    }
     public void setRot(double val) {
         rotPos = val;
     }
 
-    public void setBucket(double val) {
-        bucketPos = val;
+    public void setOutArm(double val) {
+        outArmPos = val;
     }
 
-    public void setLeftClaw(double val) {
-        leftClawPos = val;
+    public void intake(double mag) {
+        leftRotPower = -1*mag;
+        rightRotPower = 1*mag;
     }
 
-    public void setRightClaw(double val) {
-        rightClawPos = val;
-    }
-
-    public void setIntakePower(double val) {
-        intakePower = val;
+    public void outtake(double mag) {
+        leftRotPower = 1*mag;
+        rightRotPower = -1*mag;
     }
 
     public void setExtendoTarget(int val) {
