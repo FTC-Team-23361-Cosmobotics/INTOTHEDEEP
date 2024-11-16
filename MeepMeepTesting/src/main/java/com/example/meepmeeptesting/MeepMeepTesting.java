@@ -12,8 +12,10 @@ public class MeepMeepTesting {
         Pose2d StartBlueBucketPose = new Pose2d(22, 60, Math.toRadians(270));
 //        Pose2d StartBlueObsPose = new Pose2d(-22, 60, Math.toRadians(270));
 //        Pose2d StartRedObsPose = new Pose2d(22, -60, Math.toRadians(90));
+        Pose2d StartPoseSpec = new Pose2d(22, -60, Math.toRadians(270));
         Pose2d StartPose = new Pose2d(-22, -60, Math.toRadians(270));
         Pose2d specimenPose = new Pose2d(-9, -35, Math.toRadians(270));
+        Pose2d SpecBasePose = new Pose2d(10,-40, Math.toRadians(-40));
         Pose2d bucketPose = new Pose2d(-52,-53, Math.toRadians(45));
         Pose2d firstSamplePose = new Pose2d( -25, -34, Math.toRadians(160));
         Pose2d mainSamplePose = new Pose2d(-38, -25, Math.toRadians(180));
@@ -24,21 +26,26 @@ public class MeepMeepTesting {
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60.646780560809674, 30, Math.toRadians(180), Math.toRadians(180), 15)
-                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(StartPose)
+                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(StartPoseSpec)
                         .lineToSplineHeading(new Pose2d(-9, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
-                        //.lineTo(new Vector2d(-34,-36))
-                        .splineToSplineHeading(new Pose2d( -25, -34, Math.toRadians(160)), Math.toRadians(135))
+
+                        .lineToSplineHeading(SpecBasePose)
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
+
+                        .lineToSplineHeading(new Pose2d(-5, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d( -38, -25, Math.toRadians(180)))
+
+                        .lineToSplineHeading(SpecBasePose)
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
+
+                        .lineToSplineHeading(new Pose2d(-1, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d( -38, -25, Math.toRadians(180)))
+
+                        .lineToSplineHeading(SpecBasePose)
                         .waitSeconds(0.5)
-                        .lineToSplineHeading(new Pose2d(-52,-53, Math.toRadians(45)))
+
+                        .lineToSplineHeading(new Pose2d(4, -35, Math.toRadians(270)))
                         .waitSeconds(0.5)
 
                         /*

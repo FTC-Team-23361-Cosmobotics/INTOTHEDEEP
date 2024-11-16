@@ -80,16 +80,16 @@ public class Auton1 extends LinearOpMode {
         //Board Auton:
         TrajectorySequence specimen = drive.trajectorySequenceBuilder(StartPose)
                 .lineToSplineHeading(specimenPose)
-                .addDisplacementMarker(() -> {
-//                    transport.setLeftClaw(.4);
-//                    transport.setRightClaw(.05);
-                    transport.setRot(.2);
-                    transport.setOutTarget(HighSpecimen);
-                })
-                .addDisplacementMarker(ScoreSpecimenDisp, () -> {
-                    transport.setOutArm(.15);
-                    transport.setOutTarget(0);
-                })
+//                .addDisplacementMarker(() -> {
+////                    transport.setLeftClaw(.4);
+////                    transport.setRightClaw(.05);
+//                    transport.setRot(.2);
+//                    transport.setOutTarget(HighSpecimen);
+//                })
+//                .addDisplacementMarker(ScoreSpecimenDisp, () -> {
+//                    transport.setOutArm(.15);
+//                    transport.setOutTarget(0);
+//                })
                 .build();
         TrajectorySequence firstSample = drive.trajectorySequenceBuilder(specimenPose)
                 .lineToSplineHeading(new Pose2d(-22, -40, Math.toRadians(270)))
