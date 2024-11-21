@@ -29,7 +29,7 @@ public class Transport {
     private DcMotorEx extendo, out;
     private PIDController extendoController;
 
-    public ElapsedTime wait;
+//    public ElapsedTime wait;
     public double extendoPos, outPos;
     public static double extendop = .01, extendoi = .0001, extendod = 0.0001;
     public static int extendoTarget = 0;
@@ -39,21 +39,32 @@ public class Transport {
     public static final double clawOpen = -1;
     public static final double clawClosed = 1;
     public static final double outArmHome = 0;
-    public static final double outArmLifted = 0.1;
     public static final double outArmScoreBucket = .6;
-
     public static final double outArmScoreSpec = 1;
-
     public static final double rotHome = 1;
-    public static final double rotIntake = .3;
+    public static final double rotIntake = -1;
     public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
     public static final int highBucket = 2500;
     public static final int lowBucket = 1500;
     public static final int highBar = 1600;
-    public static boolean transferInProgress, waitReset, scoreInProgress, scoreSpec;
+    public enum RobotState {
+        ROBOT_NEUTRAL,
+        INTAKE_RETRACT,
+        INTAKE_TRANSFER,
+        SPEC_LIFT,
+        SPEC_READY,
+        SPEC_SCORE,
+        BUCKET_LIFT,
+        BUCKET_SCORE,
+        LIFT_RETURN
+
+    };
+    RobotState robotState = RobotState.ROBOT_NEUTRAL;
+    public long startTime;
+    public long totalTime;
 
     public Transport(HardwareMap hardwareMap) {
-        wait = new ElapsedTime();
+//        wait = new ElapsedTime();
 
         rotToggle = new Toggle(false);
         driv2 = new Toggle(false);
@@ -124,86 +135,81 @@ public class Transport {
         outClaw.setPosition(outClawPos);
         outArm.setPosition(outArmPos);
 
-        if (gamepad1.left_trigger > 0 && extendoTarget > -30 && !transferInProgress) {
-            extendoTarget -= 15;
-        }
 
-        if (gamepad1.right_trigger > 0 && extendoTarget < 2015 && !transferInProgress) {
-            extendoTarget += 15;
-        }
 
-        if (gamepad1.x && !transferInProgress) {
-            transferInProgress = true;
-            resetIntake();
-        }
-
-        if ((extendo.getCurrentPosition() <= 0 || outClawPos == clawClosed) && rot.getPosition() == rotHome && transferInProgress) {
-            if(wait.seconds() > 0.75) {
-                outArmPos = outArmLifted;
+        switch (robotState) {
+            case ROBOT_NEUTRAL:
+                if (gamepad1.x) {
+                    robotState = RobotState.INTAKE_RETRACT;
+                }
+                break;
+            case INTAKE_RETRACT:
                 extendoTarget = 0;
-                transferInProgress = false;
-                waitReset = false;
-            } else {
-                outClawPos = clawClosed;
-                extendoTarget = 200;
-                if (!waitReset) {
-                    wait.reset();
-                    waitReset = true;
+                rotPos = rotHome;
+                if (extendo.getCurrentPosition() < 10) {
+                    robotState = RobotState.INTAKE_TRANSFER;
                 }
+                startTime = System.currentTimeMillis();
+                break;
+            case INTAKE_TRANSFER:
+                outtake(1);
+                totalTime = (System.currentTimeMillis() - startTime) * 1000;
+                if (totalTime > 1) {
+                    outtake(0);
+                }
+        }
+
+
+
+
+            if (gamepad1.y) {
+                outtake(1);
+            } else if (gamepad1.x || (extendoTarget < 50 && outClawPos == clawOpen)) {
+                resetIntake();
+            } else if (rotToggle.value() == true || extendoTarget > 1500) {
+                rotPos = rotIntake;
+                intake(1);
+            } else {
+                rotPos = rotHome;
+                intake(0);
             }
-        }
 
-        if (gamepad1.left_bumper && !transferInProgress && !scoreInProgress) {
-            outTarget = highBar;
-            scoreInProgress = true;
-            scoreSpec = true;
-        }
 
-        if (gamepad1.right_bumper && !transferInProgress  && !scoreInProgress) {
-            outTarget = highBucket;
-            scoreInProgress = true;
-            scoreSpec = false;
-        }
+                if (gamepad1.left_bumper) {
+                    highBucket();
+                }
+                if (gamepad1.right_bumper) {
+                    highBar();
+                }
+                if (gamepad2.right_bumper) {
+                    lowBucket();
+                }
 
-        if ((gamepad1.y || outArmPos != outArmLifted) && scoreInProgress) {
-            if (!waitReset) {
-                wait.reset();
-                waitReset = true;
-            }
-            if (!scoreSpec) {
-                if (out.getCurrentPosition() <= 10) {
-                    scoreInProgress = false;
-                    waitReset = false;
-                } else if(wait.seconds() >= 1.75) {
-                  outTarget = 0;
-                } else if(wait.seconds() >= 1.25) {
-                    outArmPos = outArmHome;
-                } else if(wait.seconds() >= 1) {
-                    outClawPos = clawOpen;
+            if (gamepad1.b) {
+                if (outArmPos == outArmScoreBucket) {
+                    resetOut();
+                    resetIntake();
                 } else {
-                    outArmPos = outArmScoreBucket;
-                }
-            } else {
-                if(wait.seconds() > 5.5) {
-                    outArmPos = outArmHome;
-                    waitReset = false;
-                    scoreInProgress = false;
-                }
-                else if (wait.seconds() > 5) {
+//                    wait.reset();
                     outTarget = 0;
-                }
-                else{
-                    outArmPos = outArmScoreSpec;
+                    if (outPos < 1000) {
+                        resetOut();
+                        resetIntake();
+                    }
                 }
             }
-        }
 
+            if (gamepad1.left_trigger > 0 && extendoTarget > -200) {
+                extendoTarget -= 15;
+            }
 
-
+            if (gamepad1.right_trigger > 0 && extendoTarget < 2015) {
+                extendoTarget += 15;
+            }
 
 
         if (gamepad2.left_trigger > 0) {
-            outTarget -= 10;
+            outTarget -= 15;
         }
 
         if (gamepad2.right_trigger > 0) {
@@ -211,7 +217,7 @@ public class Transport {
         }
 
         if (gamepad2.left_trigger > 0) {
-            extendoTarget -= 15;    
+            extendoTarget -= 15;
         }
 
         if (gamepad2.right_trigger > 0) {
@@ -241,44 +247,42 @@ public class Transport {
     }
 
     public void resetOut() {
-        wait.reset();
+//        wait.reset();
         outClawPos = clawOpen;
-        if (wait.seconds() > .5) {
+//        if (wait.seconds() > .5) {
             outPos = -200;
             outArmPos = outArmHome;
-        }
+//        }
     }
     public void lowBucket() {
-        wait.reset();
+//        wait.reset();
         outClawPos = clawClosed;
-        if (wait.seconds() > .25) {
-            extendoTarget = 500;
-        }
-        if (wait.seconds() > .5) {
+        extendoTarget = 500;
+        if (extendo.getCurrentPosition() > 300) {
             outArmPos = outArmScoreBucket;
             outTarget = lowBucket;
         }
     }
 
     public void highBucket() {
-        wait.reset();
+//        wait.reset();
         outClawPos = clawClosed;
-        if (wait.seconds() > .25) {
+//        if (wait.seconds() > .25) {
             extendoTarget = 500;
-        }
-        if (wait.seconds() > .5) {
+//        }
+        if (extendo.getCurrentPosition() > 300) {
             outArmPos = outArmScoreBucket;
             outTarget = highBucket;
         }
     }
 
     public void highBar() {
-        wait.reset();
+//        wait.reset();
         outClawPos = clawClosed;
-        if (wait.seconds() > .25) {
+//        if (wait.seconds() > .25) {
             extendoTarget = 500;
-        }
-        if (wait.seconds() > .5) {
+//        }
+        if (extendo.getCurrentPosition() > 300) {
             outArmPos = outArmScoreSpec;
             outTarget = highBar;
         }
