@@ -48,7 +48,7 @@ public class Transport {
     public static final int lowBucket = 1500;
     public static final int highBar = 1600;
     public enum RobotState {
-        ROBOT_NEUTRAL,
+        NEUTRAL,
         INTAKE_RETRACT,
         INTAKE_TRANSFER,
         SPEC_LIFT,
@@ -59,7 +59,7 @@ public class Transport {
         LIFT_RETURN
 
     };
-    RobotState robotState = RobotState.ROBOT_NEUTRAL;
+    RobotState robotState = RobotState.NEUTRAL;
     public long startTime;
     public long totalTime;
 
@@ -138,9 +138,11 @@ public class Transport {
 
 
         switch (robotState) {
-            case ROBOT_NEUTRAL:
+            case NEUTRAL:
                 if (gamepad1.x) {
                     robotState = RobotState.INTAKE_RETRACT;
+                } else if (gamepad1.right_bumper) {
+                    robotState = RobotState.BUCKET_LIFT;
                 }
                 break;
             case INTAKE_RETRACT:
@@ -156,7 +158,30 @@ public class Transport {
                 totalTime = (System.currentTimeMillis() - startTime) * 1000;
                 if (totalTime > 1) {
                     outtake(0);
+                    robotState = RobotState.NEUTRAL;
                 }
+                break;
+            case BUCKET_LIFT:
+                outTarget = highBucket;
+                if (out.getCurrentPosition() > highBucket - 10 && gamepad1.y) {
+                    robotState = RobotState.BUCKET_SCORE;
+                    startTime = System.currentTimeMillis();
+                }
+                break;
+            case BUCKET_SCORE:
+                outArmPos = outArmScoreBucket;
+                totalTime = (System.currentTimeMillis() - startTime) * 1000;
+                if (totalTime > 2) {
+                    robotState = RobotState.LIFT_RETURN;
+                }
+                break;
+            case LIFT_RETURN:
+                outTarget = 0;
+                outArmPos = outArmHome;
+                if (out.getCurrentPosition() < 10) {
+                    robotState = RobotState.NEUTRAL;
+                }
+                break;
         }
 
 
