@@ -29,31 +29,47 @@ public class Auton1 extends LinearOpMode {
     public static double BucketX = -53;
     public static double BucketY = -56;
     public static double BucketHeading = Math.toRadians(45);
-    public static double FirstSampleX = -28;
-    public static double FirstSampleY = -34;
-    public static double FirstSampleHeading = 2.675;
-    public static double SecondSampleX = -34;
-    public static double SecondSampleY = -34;
-    public static double SecondSampleHeading = 2.675;
-
-    public static double ThirdSampleX = -45;
-    public static double ThirdSampleY = -34;
-    public static double ThirdSampleHeading = 2.675;
+    public static double FirstSampleX = -44;
+    public static double FirstSampleY = -35;
+    public static double FirstSampleHeading = 1.57;
+    public static double SecondSampleX = -55;
+    public static double SecondSampleY = -35;
+    public static double SecondSampleHeading = 1.57;
+//
+//    public static double ThirdSampleX = -45;
+//    public static double ThirdSampleY = -40;
+//    public static double ThirdSampleHeading = 2.3;
+    public static double ThirdSampleX = -50;
+    public static double ThirdSampleY = 0;
+    public static double ThirdSampleHeading = 3.14;
 
 //    public static double sampleTangent = Math.toRadians(135);
 
     public static int HighSpecimen = 1500;
     public static int SpecimenDisp = 1;
-    public static int ScoreSpecimenDisp = 37;
-    public static int Ex = 1750;
-    public static double intakeWait = .75;
+    public static int ScoreSpecimenDisp = 1;
+    public static int Ex = 700;
+    public static double intakeWait = .25;
     public static double retractWait = .75;
     public static double transferWait = .1;
     public static double bucketUpWait = .9;
-    public static double scoreWait = .5;
-    public static double bucketDownWait = .9;
+    public static double scoreWait = .75;
+    public static double scoreWait2 = 3;
 
     public static double bucketOffset = -.5;
+    public static double bOneOneOffset = -3;
+    public static double bOneTwoOffset = -.5;
+    public static double bOneThreeOffset = 0;
+    public static double bTwoOneOffset = -1.5;
+    public static double bThreeZeroOffset = -1.5;
+    public static double bThreePointFiveOffset = -1.25;
+    public static double bThreeOneOffset = -1;
+    public static double bThreeTwoOffset = -.5;
+    public static double bThreeThreeOffset = 1.5;
+    public static double bThreeFourOffset = 2;
+    public static double driveOffset = 20;
+    public static double bSigmaOffset = -2;
+    public static double bAlphaOffset = 1;
 
     public void followTrajectory(TrajectorySequence traj) {
         drive.followTrajectorySequenceAsync(traj);
@@ -62,6 +78,7 @@ public class Auton1 extends LinearOpMode {
             transport.update();
         }
     }
+
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d StartPose = new Pose2d(-22, -60, Math.toRadians(270));
@@ -79,122 +96,176 @@ public class Auton1 extends LinearOpMode {
 
         //Board Auton:
         TrajectorySequence specimen = drive.trajectorySequenceBuilder(StartPose)
-                .lineToSplineHeading(specimenPose)
-                .addDisplacementMarker(() -> {
+                .addTemporalMarker(() -> {
+                    transport.setRot(0);
+                    transport.setClawPos(1);
+                    transport.intake(0);
+                    transport.setExtendoTarget(0);
+                })
+                .lineToSplineHeading(bucketPose)
+                .UNSTABLE_addTemporalMarkerOffset(bOneOneOffset,() -> {
 //                    transport.setLeftClaw(.4);
 //                    transport.setRightClaw(.05);
-                    transport.setRot(.2);
-                    transport.setOutTarget(HighSpecimen);
+                    transport.setOutTarget(2500);
                 })
-                .addDisplacementMarker(ScoreSpecimenDisp, () -> {
-                    transport.setOutArm(.15);
-                    transport.setOutTarget(0);
+                .UNSTABLE_addTemporalMarkerOffset(bOneTwoOffset, () -> {
+                    transport.setOutArm(.7);
+
                 })
-                .build();
-        TrajectorySequence firstSample = drive.trajectorySequenceBuilder(specimenPose)
-                .lineToSplineHeading(new Pose2d(-22, -40, Math.toRadians(270)))
-                .lineToSplineHeading(firstSamplePose)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.2);
-                    transport.setExtendoTarget(Ex);
-//                    transport.setIntakePower(-1);
-                })
-                .waitSeconds(intakeWait)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.925);
-                    transport.setExtendoTarget(0);
-                })
-                .waitSeconds(retractWait)
-                .build();
-        TrajectorySequence firstbucket = drive.trajectorySequenceBuilder(firstSamplePose)
-                .lineToSplineHeading(bucketPose)
-                .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-//                    transport.setIntakePower(.7);
-                })
-                .waitSeconds(transferWait)
-                .addTemporalMarker(() -> {
-                    transport.setOutTarget(3000);
-                })
-                .waitSeconds(bucketUpWait)
-                .addTemporalMarker(() -> {
-                    transport.setOutArm(.6);
+                .UNSTABLE_addTemporalMarkerOffset(bOneThreeOffset,() -> {
+                    transport.setClawPos(0);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.15);
-                    transport.setOutTarget(0);
+                    transport.resetOut();
+                    transport.setRot(1);
+                    transport.intake(1);
                 })
-                .waitSeconds(bucketDownWait)
+                .build();
+        TrajectorySequence firstSample = drive.trajectorySequenceBuilder(bucketPose)
+//                .lineToSplineHeading(new Pose2d(-22, -40, Math.toRadians(270)))
+                .lineToSplineHeading(firstSamplePose)
+                .lineToSplineHeading(new Pose2d(FirstSampleX, FirstSampleY + driveOffset, FirstSampleHeading))
+//                .waitSeconds(intakeWait)
+//                .addTemporalMarker(() -> {
+//                    transport.setRot(.925);
+//                    transport.setExtendoTarget(0);
+//                })
+//                .waitSeconds(retractWait)
+                .build();
+        TrajectorySequence firstbucket = drive.trajectorySequenceBuilder(new Pose2d(FirstSampleX, FirstSampleY + driveOffset, FirstSampleHeading))
+                .addTemporalMarker(() -> {
+                    transport.setRot(0);
+                    transport.intake(0);
+                    transport.setExtendoTarget(200);
+                })
+                .lineToSplineHeading(bucketPose)
+                .UNSTABLE_addTemporalMarkerOffset(bThreeZeroOffset, () -> {
+                    transport.setOutArm(.15);
+                    transport.setExtendoTarget(-200);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreePointFiveOffset, () -> {
+                    transport.setOutArm(0.05);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeOneOffset, () -> {
+                    transport.setClawPos(1);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeTwoOffset,() -> {
+//                    transport.setLeftClaw(.4);
+//                    transport.setRightClaw(.05);
+                    transport.setOutTarget(2500);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeThreeOffset, () -> {
+                    transport.setOutArm(.7);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeFourOffset,() -> {
+                    transport.setClawPos(0);
+                })
+                .waitSeconds(scoreWait2)
+                .addTemporalMarker(() -> {
+                    transport.resetOut();
+                    transport.setRot(1);
+                    transport.intake(1);
+                })
                 .build();
         TrajectorySequence secondSample = drive.trajectorySequenceBuilder(bucketPose)
+//                .lineToSplineHeading(new Pose2d(-22, -40, Math.toRadians(270)))
                 .lineToSplineHeading(secondSamplePose)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.2);
-                    transport.setExtendoTarget(Ex);
-//                    transport.setIntakePower(-1);
-                })
-                .waitSeconds(intakeWait)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.925);
-                    transport.setExtendoTarget(0);
-//                    transport.setIntakePower(0);
-                })
-                .waitSeconds(retractWait)
+                .lineToSplineHeading(new Pose2d(SecondSampleX, SecondSampleY + driveOffset, SecondSampleHeading))
+//                .waitSeconds(intakeWait)
+//                .addTemporalMarker(() -> {
+//                    transport.setRot(.925);
+//                    transport.setExtendoTarget(0);
+//                })
+//                .waitSeconds(retractWait)
                 .build();
-        TrajectorySequence secondBucket = drive.trajectorySequenceBuilder(secondSamplePose)
+        TrajectorySequence secondBucket = drive.trajectorySequenceBuilder(new Pose2d(SecondSampleX, SecondSampleY + driveOffset, SecondSampleHeading))
+                .addTemporalMarker(() -> {
+                    transport.setRot(0);
+                    transport.intake(0);
+                    transport.setExtendoTarget(200);
+                })
                 .lineToSplineHeading(bucketPose)
-                .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-//                    transport.setIntakePower(.7);
-                })
-                .waitSeconds(transferWait)
-                .addTemporalMarker(() -> {
-                    transport.setOutTarget(3000);
-                })
-                .waitSeconds(bucketUpWait)
-                .addTemporalMarker(() -> {
-                    transport.setOutArm(.6);
-                })
-                .waitSeconds(scoreWait)
-                .addTemporalMarker(() -> {
+                .UNSTABLE_addTemporalMarkerOffset(bThreeZeroOffset, () -> {
                     transport.setOutArm(.15);
-                    transport.setOutTarget(0);
+                    transport.setExtendoTarget(-200);
                 })
-                .waitSeconds(bucketDownWait)
+                .UNSTABLE_addTemporalMarkerOffset(bThreePointFiveOffset, () -> {
+                    transport.setOutArm(0.05);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeOneOffset, () -> {
+                    transport.setClawPos(1);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeTwoOffset,() -> {
+//                    transport.setLeftClaw(.4);
+//                    transport.setRightClaw(.05);
+                    transport.setOutTarget(2500);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeThreeOffset, () -> {
+                    transport.setOutArm(.7);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeFourOffset,() -> {
+                    transport.setClawPos(0);
+                })
+                .waitSeconds(scoreWait2)
+                .addTemporalMarker(() -> {
+                    transport.resetOut();
+                    transport.setRot(1);
+                    transport.intake(1);
+                })
                 .build();
         TrajectorySequence thirdSample = drive.trajectorySequenceBuilder(bucketPose)
+//                .lineToSplineHeading(new Pose2d(-22, -40, Math.toRadians(270)))
                 .lineToSplineHeading(thirdSamplePose)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.2);
-                    transport.setExtendoTarget(Ex);
-//                    transport.setIntakePower(-1);
-                })
-                .waitSeconds(intakeWait)
-                .addTemporalMarker(() -> {
-                    transport.setRot(.925);
-                    transport.setExtendoTarget(0);
-//                    transport.setIntakePower(0);
-                })
-                .waitSeconds(retractWait)
-                .build();
-        TrajectorySequence thirdBucket = drive.trajectorySequenceBuilder(thirdSamplePose)
-                .lineToSplineHeading(bucketPose)
-                .UNSTABLE_addTemporalMarkerOffset(bucketOffset, () -> {
-//                    transport.setIntakePower(.7);
-                })
-                .waitSeconds(transferWait)
-                .addTemporalMarker(() -> {
-                    transport.setOutTarget(3000);
-                })
-                .waitSeconds(bucketUpWait)
-                .addTemporalMarker(() -> {
+                .UNSTABLE_addDisplacementMarkerOffset(bAlphaOffset,() -> {
                     transport.setOutArm(.6);
                 })
-                .waitSeconds(scoreWait)
+                .lineToSplineHeading(new Pose2d(ThirdSampleX + 40, ThirdSampleY, ThirdSampleHeading))
+//                .waitSeconds(intakeWait)
+//                .addTemporalMarker(() -> {
+//                    transport.setRot(.925);
+//                    transport.setExtendoTarget(0);
+//                })
+//                .waitSeconds(retractWait)
+                .build();
+
+        TrajectorySequence thirdBucket = drive.trajectorySequenceBuilder(thirdSamplePose)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.15);
-                    transport.setOutTarget(0);
+                    transport.setRot(0);
+                    transport.intake(0);
+                    transport.setExtendoTarget(200);
                 })
-                .waitSeconds(bucketDownWait)
+                .lineToSplineHeading(bucketPose)
+                .UNSTABLE_addTemporalMarkerOffset(bThreeZeroOffset, () -> {
+                    transport.setOutArm(.15);
+                    transport.setExtendoTarget(-200);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreePointFiveOffset, () -> {
+                    transport.setOutArm(0.05);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeOneOffset, () -> {
+                    transport.setClawPos(1);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeTwoOffset,() -> {
+//                    transport.setLeftClaw(.4);
+//                    transport.setRightClaw(.05);
+                    transport.setOutTarget(2500);
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeThreeOffset, () -> {
+                    transport.setOutArm(.7);
+
+                })
+                .UNSTABLE_addTemporalMarkerOffset(bThreeFourOffset,() -> {
+                    transport.setClawPos(0);
+                })
+                .waitSeconds(scoreWait2)
+                .addTemporalMarker(() -> {
+                    transport.resetOut();
+                    transport.setRot(1);
+                    transport.intake(1);
+                })
                 .build();
 
 
@@ -275,7 +346,7 @@ public class Auton1 extends LinearOpMode {
             followTrajectory(secondSample);
             followTrajectory(secondBucket);
             followTrajectory(thirdSample);
-            followTrajectory(thirdBucket);
+//            followTrajectory(thirdBucket); - UNCOMMENT WHEN ATTEPMTING 1 + 3
 //            switch (BlueClose.spikePos) {
 //                case LEFT:
 //                    followTrajectory(leftBoard);

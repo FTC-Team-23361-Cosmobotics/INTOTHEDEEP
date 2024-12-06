@@ -16,128 +16,71 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 public class Transport {
-    private Toggle clawToggle, outtakeToggle, rotToggle, driv2;
+    public Toggle clawToggle, rotToggle; //TODO: REMOVE TOGGLES AND HARD CODE
     private ServoImplEx outClaw, rot, outArm;
     private CRServoImplEx leftRot, rightRot;
+    //private ServoImplEx specClaw, rot, bucketYaw, bucketPitch;
+    //private DcMotorEx extendo, out, intake;
 
     private DcMotorEx extendo, out;
     private PIDController extendoController;
 
     public double extendoPos, outPos;
 
-    public static double extendop = .01, extendoi = .0001, extendod = 0.0001;
+    public static double extendop = .02, extendoi = .0001, extendod = 0.0001;
     public static int extendoTarget = 0;
     private PIDController outController;
 
     public static double outp = 0.01, outi = .0001, outd = .0001;
     public static int outTarget = 0;
 
-//    public int mode = 0;
-
-//    //Safe, Intaking Ground, Intaking Med, Intaking Top, Parallels (.5, 1st, 1.5, 2nd, 2.5, 3rd, 3.5), Hang
-//    public static final int[] armPositions = {0, 3100, 2975, 2900, 450, 500, 600, 775, 775, 850, 900, 1500};
-//
-//    //Safe, Extended, Mid-Way
-//    public static final int[] slidesPositions = {0, 1500, 3000, 1500, 1750, 2700, 3000};
-//    //Safe, Deploy, Intaking, Intaking Off-Ground, Parallels (.5, 1st, 1.5, 2 - 3.5), Hang
-//    public static final double[] intakeRotPositions = {0, .9, .45, .42, .95, 1, .6};
-
-    public static final double clawOpen = 1; //TODO: TUNE THESE
-    public static final double clawClosed = 0;
+    public static final double clawOpen = 0; //TODO: TUNE THESE
+    public static final double clawClosed = 1;
 
 
-    public static final double outArmHome = .15;
-    public static final double outArmScore = .6; //TODO: TUNE
+    public static final double outArmHome = 0.05;
+    public static final double outArmScoreBucket = .7;
+    public static final double outArmScoreSpec = 1;
 
 
-    public static final double rotHome = .95;
-    public static final double rotIntake = .2;
+    public static final double rotIntake = 1;
+    public static final double rotHome = 0;
 
 
     public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
 
-    public static final int highBucket = 3500; //TODO: TUNE VVV
+    public static final int highBucket = 2500; //TODO: TUNE VVV
     public static final int lowBucket = 1500;
-    public static final int highBar = 2000;
+    public static final int highBar = 1600;
 
-//    public boolean armInRange;
-//    public boolean slidesInRange;
-//    public boolean slidesAtZero;
+    public static TransportState transportState = TransportState.START;
+    public static ElapsedTime transportTime = new ElapsedTime();
 
-    //Neutral, In-taking, Out-taking
-//    public enum TPos {
-//        //Reset:
-//        RESET("RESET", armPositions[0], intakeRotPositions[0], slidesPositions[0]),
-//
-//        //Deploy:
-//        DEPLOY("DEPLOY", armPositions[1], intakeRotPositions[2], slidesPositions[0]),
-//
-//        //Intaking Positions:
-//        INTAKING_MED_GROUND("INTAKING_CLOSE_GROUND", armPositions[1], intakeRotPositions[2], slidesPositions[1]),
-//        INTAKING_FAR_GROUND("INTAKING_FAR_GROUND", armPositions[1], intakeRotPositions[2], slidesPositions[6]),
-//        INTAKING_CLOSE_MEDSTACK("INTAKING_CLOSE_MEDSTACK", armPositions[2], intakeRotPositions[6], slidesPositions[0]),
-//        //TODO: TUNE ^^^
-//        INTAKING_FAR_MEDSTACK("INTAKING_FAR_MEDSTACK", armPositions[2], intakeRotPositions[6], slidesPositions[1]),
-//        //TODO: TUNE ^^^
-//        INTAKING_CLOSE_TOPSTACK("INTAKING_CLOSE_TOPSTACK", armPositions[3], intakeRotPositions[6], slidesPositions[0]),
-//        INTAKING_FAR_TOPSTACK("INTAKING_FAR_TOPSTACK", armPositions[3], intakeRotPositions[6], slidesPositions[1]),
-//        //TODO: TUNE ^^^
-//        //Outtaking Positions:
-//        OUTTAKING_1("OUTTAKING_1", armPositions[4], intakeRotPositions[4], slidesPositions[1]),
-//
-//        OUTTAKING_2("OUTTAKING_2", armPositions[5], intakeRotPositions[4], slidesPositions[1]),
-//
-//        OUTTAKING_3("OUTTAKING_3", armPositions[6], intakeRotPositions[4], slidesPositions[1]),
-//
-//        OUTTAKING_4("OUTTAKING_4", armPositions[7], intakeRotPositions[5], slidesPositions[1]),
-//        OUTTAKING_5("OUTTAKING_5", armPositions[7], intakeRotPositions[5], slidesPositions[5]),
-//        OUTTAKING_6("OUTTAKING_6", armPositions[9], intakeRotPositions[5], slidesPositions[5]),
-//        OUTTAKING_7("OUTTAKING_7", armPositions[9], intakeRotPositions[5], slidesPositions[2]),
-//
-//        HANG("HANG", armPositions[11], intakeRotPositions[6], slidesPositions[2]);
-//
-//        private final String debug;
-//        private final int armPosition;
-//        private final double intakeRotPosition;
-//
-//        private final int slidesPosition;
-//
-//        TPos(String debug, int armPosition, double intakeRotPosition, int slidesPosition) {
-//            this.debug = debug;
-//            this.armPosition = armPosition;
-//            this.intakeRotPosition = intakeRotPosition;
-//            this.slidesPosition = slidesPosition;
-//        }
-//
-//        public String toString() {
-//            return debug;
-//        }
-//
-//        public int armPos() {
-//            return armPosition;
-//        }
-//
-//        public double intakeRotPos() {
-//            return intakeRotPosition;
-//        }
-//
-//        public int slidesPos() {
-//            return slidesPosition;
-//        }
-//    }
-//
-//    public TPos transportPos = TPos.RESET;
+    public enum TransportState {
+        START,
+        INTAKING,
+        TRANSFER_SAMPLE,
+        DEPOSIT_SPEC_SAMPLE,
+
+        LOW_BUCKET,
+        SCORE_LOW_BUCKET,
+
+        HIGH_BUCKET,
+        SCORE_HIGH_BUCKET,
+
+        SCORE_SPEC,
+        MANUAL
+    }
 
     public Transport(HardwareMap hardwareMap) {
         clawToggle = new Toggle(false);
-        outtakeToggle = new Toggle(false);
         rotToggle = new Toggle(false);
-        driv2 = new Toggle(false);
 
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
@@ -162,47 +105,10 @@ public class Transport {
 
         leftRot.setPower(0);
         rightRot.setPower(0);
-        rot.setPosition(rotIntake);
+        rot.setPosition(rotHome);
         outClaw.setPosition(clawClosed);
         outArm.setPosition(outArmHome);
     }
-
-
-//    public void setTPos() {
-//        armInRange = Math.abs(transportPos.armPos() - armMotor.getCurrentPosition()) < 50;
-//        slidesInRange = Math.abs(transportPos.slidesPos() - slidesMotor.getCurrentPosition()) < 15;
-//        slidesAtZero = slidesMotor.getCurrentPosition() < 50;
-//        if (!slidesAtZero && !armInRange) {
-//            slidesTarget = 0;
-//        }
-//        if (slidesAtZero && !armInRange) {
-//            armTarget = transportPos.armPos();
-//        }
-//        if (!slidesInRange && armInRange) {
-//            slidesTarget = transportPos.slidesPos();
-//        }
-//
-//        if (mode == 1 && slidesAtZero && armInRange) {
-//            leftIntake.setPosition(clawPositions[2] - .12);
-//            rightIntake.setPosition(clawPositions[2]);
-//        } else if (mode == 0 && transportPos.debug != "AUTO_DEPLOY" || slidesAtZero && transportPos.debug != "AUTO_DEPLOY") {
-//            leftIntake.setPosition(clawPositions[0] - .12);
-//            rightIntake.setPosition(clawPositions[0]);
-//        } else {
-//            leftIntake.setPosition(clawPositions[leftClawPos] - .12);
-//            rightIntake.setPosition(clawPositions[rightClawPos]);
-//        }
-//
-//        if (mode != 2) {
-//            intakeRotation.setPosition(transportPos.intakeRotPos());
-//        }
-//        if (mode == 2 && !armInRange) {
-//            intakeRotation.setPosition(0.35);
-//        }
-//        if (mode == 2 && armInRange) {
-//            intakeRotation.setPosition(transportPos.intakeRotPos());
-//        }
-//    }
 
     public void update() {
         outController.setPID(outp, outi, outd);
@@ -223,11 +129,6 @@ public class Transport {
     }
 
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
-        clawToggle.update(gamepad2.y);
-        outtakeToggle.update(gamepad2.x);
-        rotToggle.update(gamepad2.a);
-        driv2.update(gamepad1.back);
-
         outController.setPID(outp, outi, outd);
         int outPos = out.getCurrentPosition();
         double outpid = outController.calculate(outPos, outTarget);
@@ -244,32 +145,40 @@ public class Transport {
         outClaw.setPosition(outClawPos);
         outArm.setPosition(outArmPos);
 
-        if (outtakeToggle.value() == true) {
-            outArmPos = outArmScore;
+        clawToggle.update(gamepad1.y);
+        rotToggle.update(gamepad1.a);
+
+        if (clawToggle.value() == false || (extendoTarget > 500 && extendoTarget < 600)) {
+            outClawPos = clawOpen;
         } else {
-            outArmPos = outArmHome;
+            outClawPos = clawClosed;
         }
 
-        if (rotToggle.value() == true) { // || extendoPos > 2000
+        if (gamepad2.b) {
+            outtake(1);
+        } else if (gamepad1.x) {
+            resetIntake();
+        } else if (rotToggle.value() == true || extendoTarget > 1500) {
             rotPos = rotIntake;
+            intake(1);
         } else {
             rotPos = rotHome;
-        }
-
-        if (gamepad1.b) {
-            intake(1);
-        }
-
-        if (gamepad1.x) {
-            outtake(1);
-        }
-
-        if (gamepad1.a) {
             intake(0);
         }
 
-        if (gamepad1.y) {
-            transfer();
+        if (gamepad1.b) {
+            if (outArmPos == outArmScoreBucket) {
+                resetOut();
+            }   else if (outArmPos == outArmScoreSpec) {
+                outTarget = -200;
+                if (outPos < 1350) {
+                    resetOut();
+                }
+            }
+        }
+
+        if (gamepad1.back) {
+            outTarget = 300;
         }
 
         if (gamepad1.left_bumper) {
@@ -284,18 +193,20 @@ public class Transport {
             lowBucket();
         }
 
-        if (clawToggle.value() == true) {
-            outClawPos = clawOpen;
-        } else {
-            outClawPos = clawClosed;
+        if (gamepad1.left_trigger > 0 && extendoTarget > -1000) {
+            extendoTarget -= 8;
         }
 
-        if (gamepad1.left_trigger > 0 && extendoTarget > -30) {
-            extendoTarget -= 15;
+        if (gamepad1.right_trigger > 0 && extendoTarget < 1000) {
+            extendoTarget += 8;
         }
 
-        if (gamepad1.right_trigger > 0 && extendoTarget < 2015) {
-            extendoTarget += 15;
+        if (gamepad2.left_bumper) {
+            extendoTarget -= 8;
+        }
+
+        if (gamepad2.right_bumper) {
+            extendoTarget += 8;
         }
 
         if (gamepad2.left_trigger > 0) {
@@ -305,10 +216,6 @@ public class Transport {
         if (gamepad2.right_trigger > 0) {
             outTarget += 15;
         }
-       //FULL DRIVER2 CONTROL
-        if (driv2.value() == true) {
-            //TODO: FILL WITH SAME CONTROLS AS DRIVER 1 BUT FOR DRIVER 2
-        }
 
 //        if (gamepad2.left_bumper) {
 //            extendoTarget -= 15;
@@ -316,9 +223,14 @@ public class Transport {
 //        if (gamepad2.right_bumper) {
 //            extendoTarget += 1500;
 //        }
-        if (gamepad2.b) {
+        if (gamepad2.x) {
             out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
+        if (gamepad2.a) {
+            extendo.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
 
@@ -331,31 +243,31 @@ public class Transport {
     //
     // Gamepad2 is backups, that can be triggered by gamepad1 (if gamepad1 dcs gamepad2 auto becomes gamepad1)
     public void resetIntake() {
-        extendoTarget = 0;
+        extendoTarget = -200;
         rotPos = rotHome;
         intake(0);
     }
 
     public void resetOut() {
-        outPos = -200;
+        outTarget = -200;
         outArmPos = outArmHome;
-        outClawPos = clawOpen;
+        resetIntake();
     }
     public void lowBucket() {
-        transfer();
-        outArmPos = outArmScore;
+        extendoTarget = 150;
+        outArmPos = outArmScoreBucket;
         outTarget = lowBucket;
     }
 
     public void highBucket() {
-        transfer();
-        outArmPos = outArmScore;
+        extendoTarget = 150;
+        outArmPos = outArmScoreBucket;
         outTarget = highBucket;
     }
 
     public void highBar() {
-        transfer();
-        outArmPos = outArmScore;
+        extendoTarget = 150;
+        outArmPos = outArmScoreSpec;
         outTarget = highBar;
     }
 
@@ -367,18 +279,6 @@ public class Transport {
 //        rightClawPos = val;
 //    }
 
-    public void transfer() {
-        //outtake(.35);
-        outClawPos = clawClosed;
-        rotPos = rotIntake;
-    }
-
-    public void reset() {
-        leftRotPower = 0;
-        rightRotPower = 0;
-        rotPos = rotIntake;
-        outClawPos = clawOpen;
-    }
     public void setClawPos(double val) {
         outClawPos = val;
     }
@@ -391,13 +291,13 @@ public class Transport {
     }
 
     public void intake(double mag) {
-        leftRotPower = -1*mag;
-        rightRotPower = 1*mag;
+        leftRotPower = 1*mag;
+        rightRotPower = -1*mag;
     }
 
     public void outtake(double mag) {
-        leftRotPower = 1*mag;
-        rightRotPower = -1*mag;
+        leftRotPower = -1*mag;
+        rightRotPower = 1*mag;
     }
 
     public void setExtendoTarget(int val) {

@@ -24,7 +24,7 @@ public class PIDFTransport extends OpMode {
     private Drive drive;
     private DcMotorEx extendo, out;
     private PIDController extendoController, outController;
-    public static double extendop = .01, extendoi = 0.0001, extendod = 0.0001;
+    public static double extendop = .02, extendoi = 0.0001, extendod = 0.0001;
     public static int extendoTarget = 0;
     public static double outp = 0.007, outi = 0, outd = 0.0004;
     public static int outTarget = 0;

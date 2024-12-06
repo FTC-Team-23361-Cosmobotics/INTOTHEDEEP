@@ -109,6 +109,12 @@ public class Drive {
             backLeft.setPower(backLeftPower);
             frontRight.setPower(frontRightPower);
             backRight.setPower(backRightPower);
+            // This button choice was made so that it is hard to hit on accident,
+            // it can be freely changed based on preference.
+            //Reset IMU:
+            if (gamepad1.back) {
+                resetImu();
+            }
         } else {
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
@@ -133,13 +139,6 @@ public class Drive {
             backLeft.setPower(backLeftPower);
             frontRight.setPower(frontRightPower);
             backRight.setPower(backRightPower);
-        }
-
-        // This button choice was made so that it is hard to hit on accident,
-        // it can be freely changed based on preference.
-        //Reset IMU:
-        if (gamepad1.back) {
-            resetImu();
         }
     }
 
