@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 public class Transport {
     private Toggle rotToggle, driv2;
-    private ServoImplEx outClaw, rot, outArm;
+    private ServoImplEx outClaw, rot, outArm, flap;
     private CRServoImplEx leftRot, rightRot;
     private DcMotorEx extendo, out, intake;
     private PIDController extendoController;
@@ -33,19 +33,24 @@ public class Transport {
     public double extendoPos, outPos;
     public static double extendop = .01, extendoi = .0001, extendod = 0.0001;
     public static int extendoTarget = 0;
+    public static final int extendoHome = -200;
+    public static final int extendoMax = 800;
     private PIDController outController;
     public static double outp = 0.01, outi = .0001, outd = .0001;
     public static int outTarget = 0;
+    public static final double flapClosedHome = 0.4;
+    public static final double flapClosedIntake = 1;
+    public static final double flapOpenIntake = 0.5;
     public static final double clawOpen = -1;
     public static final double clawClosed = 1;
     public static final double outArmHome = 0;
     public static final double outArmScoreBucket = .6;
     public static final double outArmScoreSpec = 1;
-    public static final double rotHome = 1;
+    public static final double rotHome = 0.1;
     public static boolean RotToggle, intakeInUse = false;
     public static final int intakeIn = 1;
     public static final int intakeOut = -1;
-    public static final double rotIntake = -1;
+    public static final double rotIntake = 0.9;
     public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
     public static final int highBucket = 2500;
     public static final int lowBucket = 1500;
@@ -61,12 +66,7 @@ public class Transport {
         LIFT_RETURN
 
     };
-    SampleState sampleState = SampleState.NEUTRAL;
-
-    public enum SpecState {
-        NEUTRAL,
-        SPEC_
-    }
+    SampleState sampleState;
     public long startTime;
     public long totalTime;
 
@@ -93,17 +93,18 @@ public class Transport {
 
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
-        leftRot = hardwareMap.get(CRServoImplEx.class, "leftRot");
-        rightRot = hardwareMap.get(CRServoImplEx.class, "rightRot");
         rot = hardwareMap.get(ServoImplEx.class, "rot");
-        outClaw = hardwareMap.get(ServoImplEx.class, "outClaw");
         outArm = hardwareMap.get(ServoImplEx.class, "outArm");
+        flap = hardwareMap.get(ServoImplEx.class, "flap");
 
         leftRot.setPower(0);
         rightRot.setPower(0);
         rot.setPosition(rotHome);
         outClaw.setPosition(clawOpen);
         outArm.setPosition(outArmHome);
+        flap.setPosition(flapClosedHome);
+
+        sampleState = SampleState.NEUTRAL;
     }
 
     public void update() {
@@ -145,17 +146,17 @@ public class Transport {
         outArm.setPosition(outArmPos);
 
 
-
         switch (sampleState) {
             case NEUTRAL:
                 if (gamepad1.x) {
-                    sampleState = SampleState.INTAKE_RETRACT;
-                    extendoTarget = 0;
+                    extendoTarget = extendoHome;
                     rotPos = rotHome;
                     intakeInUse = true;
+                    flap.setPosition(flapClosedHome);
+                    sampleState = SampleState.INTAKE_RETRACT;
                 } else if (gamepad1.right_bumper) {
-                    sampleState = SampleState.BUCKET_LIFT;
                     outTarget = highBucket;
+                    sampleState = SampleState.BUCKET_LIFT;
                 }
                 break;
             case INTAKE_RETRACT:
@@ -167,7 +168,7 @@ public class Transport {
                 break;
             case INTAKE_TRANSFER:
                 totalTime = System.currentTimeMillis() - startTime; // milliseconds
-                if (totalTime > 1) {
+                if (totalTime > transferWait) {
                     intake.setPower(0);
                     intakeInUse = false;
                     sampleState = SampleState.NEUTRAL;
@@ -182,7 +183,7 @@ public class Transport {
                 break;
             case BUCKET_SCORE:
                 totalTime = System.currentTimeMillis() - startTime; // milliseconds
-                if (totalTime > 2) {
+                if (totalTime > scoreWait) {
                     outTarget = 0;
                     outArmPos = outArmHome;
                     sampleState = SampleState.LIFT_RETURN;
@@ -198,15 +199,19 @@ public class Transport {
         if (!intakeInUse) {
             if (gamepad1.right_trigger > 0) {
                 extendoTarget += 15;
+                extendoTarget = Math.min(extendoMax, extendoTarget);
             } else if (gamepad1.left_trigger > 0) {
                 extendoTarget -= 15;
+                extendoTarget = Math.min(extendoHome, extendoTarget);
             }
             if (extendoTarget > 1500 || rotToggle.value()) { // rotToggle is the a button
                 rotPos = rotIntake;
                 intake.setPower(intakeIn);
+                flap.setPosition(flapClosedIntake);
             } else {
                 rotPos = rotHome;
                 intake.setPower(0);
+                flap.setPosition(flapClosedHome);
             }
         }
 
