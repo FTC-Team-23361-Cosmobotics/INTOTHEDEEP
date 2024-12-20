@@ -210,28 +210,6 @@ public class Transport {
             }
         }
 
-            if (gamepad1.b) {
-                if (outArmPos == outArmScoreBucket) {
-                    resetOut();
-                    resetIntake();
-                } else {
-//                    wait.reset();
-                    outTarget = 0;
-                    if (outPos < 1000) {
-                        resetOut();
-                        resetIntake();
-                    }
-                }
-            }
-
-            if (gamepad1.left_trigger > 0 && extendoTarget > -200) {
-                extendoTarget -= 15;
-            }
-
-            if (gamepad1.right_trigger > 0 && extendoTarget < 2015) {
-                extendoTarget += 15;
-            }
-
 
         if (gamepad2.left_trigger > 0) {
             outTarget -= 15;
