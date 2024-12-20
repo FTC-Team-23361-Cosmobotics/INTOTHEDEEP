@@ -4,13 +4,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.sun.tools.javac.Main;
 
 import org.firstinspires.ftc.teamcode.auton.Auton;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.teleop.AllianceStorage;
 
 @Autonomous(preselectTeleOp="CosmoboticsTeleOp")
 @Config
@@ -117,11 +115,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.6);
+                    transport.setBucketPitch(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.15);
+                    transport.setBucketPitch(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)
@@ -152,11 +150,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.6);
+                    transport.setBucketPitch(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.15);
+                    transport.setBucketPitch(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)
@@ -187,11 +185,11 @@ public class Auton1 extends LinearOpMode {
                 })
                 .waitSeconds(bucketUpWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.6);
+                    transport.setBucketPitch(.6);
                 })
                 .waitSeconds(scoreWait)
                 .addTemporalMarker(() -> {
-                    transport.setOutArm(.15);
+                    transport.setBucketPitch(.15);
                     transport.setOutTarget(0);
                 })
                 .waitSeconds(bucketDownWait)

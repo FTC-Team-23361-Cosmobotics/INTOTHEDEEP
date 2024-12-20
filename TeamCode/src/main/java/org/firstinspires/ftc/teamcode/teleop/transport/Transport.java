@@ -1,30 +1,19 @@
 package org.firstinspires.ftc.teamcode.teleop.transport;
 
-import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
-import static org.firstinspires.ftc.teamcode.test.GetTransportPositions.armMotor;
-import static org.firstinspires.ftc.teamcode.test.GetTransportPositions.slidesMotor;
-
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.hardware.CRServoImpl;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
 public class Transport {
     private Toggle rotToggle, driv2;
-    private ServoImplEx outClaw, rot, outArm, flap;
+    private ServoImplEx outClaw, rot, bucketPitch, flap;
     private CRServoImplEx leftRot, rightRot;
     private DcMotorEx extendo, out, intake;
     private PIDController extendoController;
@@ -95,14 +84,11 @@ public class Transport {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
         rot = hardwareMap.get(ServoImplEx.class, "rot");
-        outArm = hardwareMap.get(ServoImplEx.class, "outArm");
+        bucketPitch = hardwareMap.get(ServoImplEx.class, "bucketPitch");
         flap = hardwareMap.get(ServoImplEx.class, "flap");
 
-        leftRot.setPower(0);
-        rightRot.setPower(0);
         rot.setPosition(rotHome);
-        outClaw.setPosition(clawOpen);
-        outArm.setPosition(outArmHome);
+//        outArm.setPosition(outArmHome);
         flap.setPosition(flapClosedHome);
 
         sampleState = SampleState.NEUTRAL;
@@ -119,11 +105,10 @@ public class Transport {
         double extendopid = extendoController.calculate(extendoPos, extendoTarget);
         extendo.setPower(extendopid);
 
-        leftRot.setPower(leftRotPower);
-        rightRot.setPower(rightRotPower);
+
         rot.setPosition(rotPos);
-        outClaw.setPosition(outClawPos);
-        outArm.setPosition(outArmPos);
+
+        bucketPitch.setPosition(outArmPos);
     }
 
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
@@ -140,11 +125,9 @@ public class Transport {
         double extendopid = extendoController.calculate(extendoPos, extendoTarget);
         extendo.setPower(extendopid);
 
-        leftRot.setPower(leftRotPower);
-        rightRot.setPower(rightRotPower);
+
         rot.setPosition(rotPos);
-        outClaw.setPosition(outClawPos);
-        outArm.setPosition(outArmPos);
+        bucketPitch.setPosition(outArmPos);
 
 
         switch (sampleState) {
@@ -305,7 +288,7 @@ public class Transport {
         rotPos = val;
     }
 
-    public void setOutArm(double val) {
+    public void setBucketPitch(double val) {
         outArmPos = val;
     }
 
