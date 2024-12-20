@@ -43,16 +43,17 @@ public class Transport {
     public static final double flapOpenIntake = 0.5;
     public static final double clawOpen = -1;
     public static final double clawClosed = 1;
-    public static final double outArmHome = 0;
-    public static final double outArmScoreBucket = .6;
+    public static final double outArmHome = 1;
+    public static final double outArmScoreBucket = .2;
     public static final double outArmScoreSpec = 1;
     public static final double rotHome = 0.1;
-    public static boolean RotToggle, intakeInUse = false;
+    public static boolean intakeInUse = false;
     public static final int intakeIn = 1;
     public static final int intakeOut = -1;
     public static final double rotIntake = 0.9;
     public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
-    public static final int highBucket = 2500;
+    public static final int liftHome = -100;
+    public static final int highBucket = 2300;
     public static final int lowBucket = 1500;
     public static final int highBar = 1600;
     public static final double transferWait = 1;
@@ -184,7 +185,7 @@ public class Transport {
             case BUCKET_SCORE:
                 totalTime = System.currentTimeMillis() - startTime; // milliseconds
                 if (totalTime > scoreWait) {
-                    outTarget = 0;
+                    outTarget = liftHome;
                     outArmPos = outArmHome;
                     sampleState = SampleState.LIFT_RETURN;
                 }
