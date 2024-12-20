@@ -26,7 +26,7 @@ public class Transport {
     private Toggle rotToggle, driv2;
     private ServoImplEx outClaw, rot, outArm;
     private CRServoImplEx leftRot, rightRot;
-    private DcMotorEx extendo, out;
+    private DcMotorEx extendo, out, intake;
     private PIDController extendoController;
 
 //    public ElapsedTime wait;
@@ -42,24 +42,31 @@ public class Transport {
     public static final double outArmScoreBucket = .6;
     public static final double outArmScoreSpec = 1;
     public static final double rotHome = 1;
+    public static boolean RotToggle, intakeInUse = false;
+    public static final int intakeIn = 1;
+    public static final int intakeOut = -1;
     public static final double rotIntake = -1;
     public static double outClawPos, leftRotPower, rightRotPower, outArmPos, rotPos;
     public static final int highBucket = 2500;
     public static final int lowBucket = 1500;
     public static final int highBar = 1600;
-    public enum RobotState {
+    public static final double transferWait = 1;
+    public static final double scoreWait = 2;
+    public enum SampleState {
         NEUTRAL,
         INTAKE_RETRACT,
         INTAKE_TRANSFER,
-        SPEC_LIFT,
-        SPEC_READY,
-        SPEC_SCORE,
         BUCKET_LIFT,
         BUCKET_SCORE,
         LIFT_RETURN
 
     };
-    RobotState robotState = RobotState.NEUTRAL;
+    SampleState sampleState = SampleState.NEUTRAL;
+
+    public enum SpecState {
+        NEUTRAL,
+        SPEC_
+    }
     public long startTime;
     public long totalTime;
 
@@ -83,6 +90,8 @@ public class Transport {
         out.setDirection(DcMotorSimple.Direction.REVERSE);
         outController.setPID(outp, outi, outd);
         outPos = out.getCurrentPosition();
+
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
 
         leftRot = hardwareMap.get(CRServoImplEx.class, "leftRot");
         rightRot = hardwareMap.get(CRServoImplEx.class, "rightRot");
@@ -137,78 +146,69 @@ public class Transport {
 
 
 
-        switch (robotState) {
+        switch (sampleState) {
             case NEUTRAL:
                 if (gamepad1.x) {
-                    robotState = RobotState.INTAKE_RETRACT;
+                    sampleState = SampleState.INTAKE_RETRACT;
+                    extendoTarget = 0;
+                    rotPos = rotHome;
+                    intakeInUse = true;
                 } else if (gamepad1.right_bumper) {
-                    robotState = RobotState.BUCKET_LIFT;
+                    sampleState = SampleState.BUCKET_LIFT;
+                    outTarget = highBucket;
                 }
                 break;
             case INTAKE_RETRACT:
-                extendoTarget = 0;
-                rotPos = rotHome;
                 if (extendo.getCurrentPosition() < 10) {
-                    robotState = RobotState.INTAKE_TRANSFER;
+                    sampleState = SampleState.INTAKE_TRANSFER;
+                    startTime = System.currentTimeMillis();
+                    intake.setPower(intakeOut);
                 }
-                startTime = System.currentTimeMillis();
                 break;
             case INTAKE_TRANSFER:
-                outtake(1);
-                totalTime = (System.currentTimeMillis() - startTime) * 1000;
+                totalTime = System.currentTimeMillis() - startTime; // milliseconds
                 if (totalTime > 1) {
-                    outtake(0);
-                    robotState = RobotState.NEUTRAL;
+                    intake.setPower(0);
+                    intakeInUse = false;
+                    sampleState = SampleState.NEUTRAL;
                 }
                 break;
             case BUCKET_LIFT:
-                outTarget = highBucket;
                 if (out.getCurrentPosition() > highBucket - 10 && gamepad1.y) {
-                    robotState = RobotState.BUCKET_SCORE;
+                    outArmPos = outArmScoreBucket;
+                    sampleState = SampleState.BUCKET_SCORE;
                     startTime = System.currentTimeMillis();
                 }
                 break;
             case BUCKET_SCORE:
-                outArmPos = outArmScoreBucket;
-                totalTime = (System.currentTimeMillis() - startTime) * 1000;
+                totalTime = System.currentTimeMillis() - startTime; // milliseconds
                 if (totalTime > 2) {
-                    robotState = RobotState.LIFT_RETURN;
+                    outTarget = 0;
+                    outArmPos = outArmHome;
+                    sampleState = SampleState.LIFT_RETURN;
                 }
                 break;
             case LIFT_RETURN:
-                outTarget = 0;
-                outArmPos = outArmHome;
                 if (out.getCurrentPosition() < 10) {
-                    robotState = RobotState.NEUTRAL;
+                    sampleState = SampleState.NEUTRAL;
                 }
                 break;
         }
 
-
-
-
-            if (gamepad1.y) {
-                outtake(1);
-            } else if (gamepad1.x || (extendoTarget < 50 && outClawPos == clawOpen)) {
-                resetIntake();
-            } else if (rotToggle.value() == true || extendoTarget > 1500) {
+        if (!intakeInUse) {
+            if (gamepad1.right_trigger > 0) {
+                extendoTarget += 15;
+            } else if (gamepad1.left_trigger > 0) {
+                extendoTarget -= 15;
+            }
+            if (extendoTarget > 1500 || rotToggle.value()) { // rotToggle is the a button
                 rotPos = rotIntake;
-                intake(1);
+                intake.setPower(intakeIn);
             } else {
                 rotPos = rotHome;
-                intake(0);
+                intake.setPower(0);
             }
-
-
-                if (gamepad1.left_bumper) {
-                    highBucket();
-                }
-                if (gamepad1.right_bumper) {
-                    highBar();
-                }
-                if (gamepad2.right_bumper) {
-                    lowBucket();
-                }
+        }
 
             if (gamepad1.b) {
                 if (outArmPos == outArmScoreBucket) {
