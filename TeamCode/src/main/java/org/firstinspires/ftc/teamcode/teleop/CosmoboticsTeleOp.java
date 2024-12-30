@@ -10,9 +10,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
 import org.firstinspires.ftc.teamcode.teleop.misc.Misc;
-import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
+import org.firstinspires.ftc.teamcode.teleop.transport.TransportFSM;
 
 import java.util.List;
 
@@ -20,16 +21,17 @@ import java.util.List;
 @TeleOp
 public class CosmoboticsTeleOp extends OpMode {
     Drive drive;
-    Transport transport;
+    TransportFSM transportFSM;
     public List<LynxModule> allHubs;
     public LynxModule CtrlHub;
 
     public LynxModule ExpHub;
 
+
     @Override
     public void init() {
         drive = new Drive(hardwareMap);
-        transport = new Transport(hardwareMap);
+        transportFSM = new TransportFSM(hardwareMap);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         CtrlHub = allHubs.get(0);
@@ -39,21 +41,29 @@ public class CosmoboticsTeleOp extends OpMode {
         }
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry.addData("test", transportFSM.test);
     }
 
     @Override
     public void loop() {
         drive.update(gamepad1);
-        transport.update(gamepad1, gamepad2);
+        transportFSM.update(gamepad1, gamepad2);
 
-        telemetry.addData("Extendo Pos:", transport.extendoPos);
-        telemetry.addData("Extendo Target:", transport.extendoTarget);
-        telemetry.addData("Out Pos:", transport.outPos);
-        telemetry.addData("Out Target:", transport.outTarget);
-        telemetry.addData("Rotation Pos:", transport.rotPos);
-        telemetry.addData("Intake Power:", transport.leftRotPower);
-        telemetry.addData("Intake Toggle:", transport.rotToggle.value());
-        telemetry.addData("Bucket Pos:", transport.outArmPos);
+        telemetry.addData("Extendo Pos:", transportFSM.extendoPos);
+        telemetry.addData("Extendo Target:", transportFSM.extendoTarget);
+        telemetry.addData("Out Pos:", transportFSM.outPos);
+        telemetry.addData("Out Target:", transportFSM.outTarget);
+        telemetry.addData("Rotation Pos:", transportFSM.rotPos);
+        telemetry.addData("Intake Toggle:", transportFSM.intakeToggle.value());
+        telemetry.addData("Bucket Pos:", transportFSM.bucketPitchPos);
+        telemetry.addData("Flp Pos:", transportFSM.flapPos);
+        telemetry.addData("Gmepdnot2 true", gamepad1.left_trigger > 0);
+        telemetry.addData("gmpdnot2 rkght", gamepad1.right_trigger > 0);
+        telemetry.addData("extendolesthnuper ", transportFSM.extendoTarget <= transportFSM.extendoUpper);
+        telemetry.addData("extendo voltge", transportFSM.extendo.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("out voltge", transportFSM.out.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("ero limit", transportFSM.zeroLimit.isPressed());
+        telemetry.addData("test", transportFSM.test);
         telemetry.addData("Heading", drive.botHeading);
         telemetry.addData("Slowmode:", drive.slowmode.value());
     }

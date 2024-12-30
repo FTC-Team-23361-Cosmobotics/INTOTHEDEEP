@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.auton.pipeline.SpikePosDetector;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.teleop.transport.Transport;
+import org.firstinspires.ftc.teamcode.teleop.transport.TransportFSM;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -26,7 +26,7 @@ public class Auton {
 //    private SpikePosDetector pipeline;
 //    private VisionPortal vision;
 //    private AprilTagProcessor aprilTag;
-    private Transport transport;
+    private TransportFSM transport;
     private SampleMecanumDrive drive;
 //    public final Vector2d[] tagPositions = new Vector2d[] {
 //            new Vector2d(62, 41.5),
@@ -90,7 +90,7 @@ public class Auton {
 //                .setAutoStopLiveView(true)
 //                .build();
         drive = new SampleMecanumDrive(hardwareMap);
-        transport = new Transport(hardwareMap);
+        transport = new TransportFSM(hardwareMap);
     }
 
 //
@@ -185,7 +185,7 @@ public class Auton {
         return drive;
     }
 
-    public Transport transport() {
+    public TransportFSM transport() {
         return transport;
     }
 //

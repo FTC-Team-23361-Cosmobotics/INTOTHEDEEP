@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
 @Config
 @TeleOp
 public class PIDFTransport extends OpMode {
-    private Drive drive;
+    private DcMotorEx frontLeft, frontRight, backLeft, backRight;
     private DcMotorEx extendo, out;
     private PIDController extendoController, outController;
     public static double extendop = .02, extendoi = 0.0001, extendod = 0.0001;
@@ -29,17 +29,16 @@ public class PIDFTransport extends OpMode {
     public static double outp = 0.007, outi = 0, outd = 0.0004;
     public static int outTarget = 0;
 
-    private ServoImplEx outClaw, rot, outArm;
+    private ServoImplEx outClaw, rot, outArm, bucketPitch;
     private CRServoImplEx leftRot, rightRot;
 
     public static double rotPos;
 
     public static double outClawPos;
 
-    public static double leftRotPower;
-    public static double rightRotPower;
+    public static double frontLeftPower, backLeftPower, frontRightPower, backRightPower;
 
-    public static double outArmPos;
+    public static double outArmPos, bucketPos;
     /*
     Notes:
     OutArm
@@ -73,14 +72,17 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void init() {
-        drive = new Drive(hardwareMap);
-        leftRot = hardwareMap.get(CRServoImplEx.class, "leftRot");
-        rightRot = hardwareMap.get(CRServoImplEx.class, "rightRot");
+        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rot = hardwareMap.get(ServoImplEx.class, "rot");
-
-        outClaw = hardwareMap.get(ServoImplEx.class, "outClaw");
-        outArm = hardwareMap.get(ServoImplEx.class, "outArm");
+        rot.setDirection(Servo.Direction.REVERSE);
+        bucketPitch = hardwareMap.get(ServoImplEx.class, "bucketPitch");
+        bucketPitch.setDirection(Servo.Direction.REVERSE);
 
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
@@ -99,13 +101,13 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void loop() {
-        drive.update(gamepad1);
-        rot.setPosition(rotPos);
-        outClaw.setPosition(outClawPos);
-        leftRot.setPower(leftRotPower);
-        rightRot.setPower(rightRotPower);
-        outArm.setPosition(outArmPos);
+        frontLeft.setPower(frontLeftPower);
+        backLeft.setPower(backLeftPower);
+        frontRight.setPower(frontRightPower);
+        backRight.setPower(backRightPower);
+bucketPitch.setPosition(bucketPos);
 
+        rot.setPosition(rotPos);
         outController.setPID(outp, outi, outd);
         int outPos = out.getCurrentPosition();
         double outpid = outController.calculate(outPos, outTarget);
