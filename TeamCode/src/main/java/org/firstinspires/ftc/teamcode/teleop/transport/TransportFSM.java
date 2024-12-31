@@ -183,9 +183,9 @@ public class TransportFSM {
     public static double bucketYawHome = 0.15;
     public static double bucketYawSpit = .5;
 
-    public static double rotIntake = .8;
-    public static double rotPrep = .5;
-    public static double rotHome = .1;
+    public static double rotIntake = .9;
+    public static double rotPrep = .6;
+    public static double rotHome = .05;
 
     public static double bucketPitchHome = 1;
     public static double bucketPitchPrep = .75;
@@ -203,16 +203,16 @@ public class TransportFSM {
     public static int autoExtendoUpper = 600;
     public static int extendoUpper = 750;
     //TODO: set bck to mx lter
-    public static int extendoLower = -1000;
+    public static int extendoLower = 0;
     public static int extended = 300;
     public static int transferTrigger = 0;
-    public static int increment = 15;
+    public static int increment = 20;
     public static int outHome = -5;
     public static int outDump = 700;
 //    public final int dumpTrigger = 600;
     public static int outLowBucket = 600;
 //    public final int lowFlipTrigger = 300;
-    public static int outHighBucket = 2300;
+    public static int outHighBucket = 2250;
 //    public final int highFlipTrigger = 2300;
 //    public final int armHome = 0;
 //    public final int armLowBar = 700;
@@ -230,7 +230,7 @@ public class TransportFSM {
 
     //Wait Values:
     public static int shortTransferWait = 1;
-    public static double longTransferWait = 2;
+    public static double longTransferWait = .5;
     public static double dumpWait = .75;
 
     //Get Sample Color
@@ -561,7 +561,7 @@ public class TransportFSM {
                 if (intakeToggle.value()) {
                     sampleTransport = SampleTransport.INTAKE;
                 }
-                if (extendoPos < 50 || gamepad1.right_bumper) {
+                if (extendoPos < 100 || gamepad1.right_bumper) {
                     sampleWait.reset();
                     sampleTransport = SampleTransport.TRANSFER;
                 }
@@ -569,7 +569,7 @@ public class TransportFSM {
             case TRANSFER:
                 rotPos = rotHome;
                 intakePower = transferring;
-                extendoTarget = -10;
+                extendoTarget = -3;
                 if (sampleWait.seconds() > shortTransferWait) {
                     sampleTransport = SampleTransport.HIGH_BUCKET;
                 }
@@ -601,14 +601,12 @@ public class TransportFSM {
             default:
                 sampleTransport = sampleTransport.SAMPLE_HOME;
         }
-        if (gamepad1.left_trigger > 0 && extendoTarget >= extendoLower) {
+        if (gamepad1.left_trigger > 0 && extendoTarget > extendoLower) {
             extendoTarget -= increment;
-            test = true;
         }
 
         if (gamepad1.right_trigger > 0 && extendoTarget <= extendoUpper) {
             extendoTarget += increment;
-            test = false;
         }
 
         if (gamepad1.x && sampleTransport != SampleTransport.SAMPLE_HOME) {
@@ -617,7 +615,7 @@ public class TransportFSM {
 //            specimenTransport = SpecimenTransport.SPECIMEN_HOME;
         }
 
-        if (zeroLimit.isPressed() || gamepad1.dpad_left) {
+        if (zeroLimit.isPressed() || gamepad1.dpad_up) {
             extendo.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
