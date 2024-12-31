@@ -23,6 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
+import android.graphics.Color;
 
 public class TransportFSM {
     public boolean test = false;
@@ -221,7 +222,14 @@ public class TransportFSM {
     public static double transferring = -.5;
     public static double maintaining = .2;
     public static double dormant = 0;
-
+    ColorSensor colorSensor;
+    public static double hue;
+    public static int validSample = 0;
+    public static double blueSample = 0; // TODO: update values
+    public static double redSample = 0;
+    public static double yellowSample = 0;
+    public static double hueError = 20;
+    float hsvValues[] = {0F,0F,0F};
 
 
     //ElapsedTimes:
@@ -347,7 +355,8 @@ public class TransportFSM {
         flap.setPosition(flapClosedrotHome);
         bucketPitch.setPosition(bucketPitchHome);
 //        bucketYaw.setPosition(bucketYawHome);
-
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+        colorSensor.enableLed(true);
         //INIT LED COLOR: purpleRGB!
     }
 
@@ -639,6 +648,12 @@ public class TransportFSM {
 
 
 
+    }
+
+    public int updateColor() {
+        Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
+        hue = hsvValues[0];
+        
     }
 
 
