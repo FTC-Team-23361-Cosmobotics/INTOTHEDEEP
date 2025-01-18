@@ -19,6 +19,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.teleop.transport.EncoderStorage;
+
+
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -27,13 +30,16 @@ import android.graphics.Color;
 
 public class TransportFSM {
     public boolean test = false;
-    public TouchSensor zeroLimit;
+    public TouchSensor zeroLimit, outLimit;
 
-    public Toggle intakeToggle;
-    private ServoImplEx rot, flap, bucketPitch;
+    public Toggle intakeToggle, isSpecToggle;
+    private ServoImplEx rot, bucketPitch, specClaw, specRot, specArm, flicker;
+    private CRServoImplEx outWheel;
+    //    private ServoImplEx flap;
 //    private ServoImplEx bucketYaw;
     //private ServoImplEx specClawRoll, specClaw;
-    public DcMotorEx extendo, out, arm, intake;
+    public static DcMotorEx extendo, out;
+    public DcMotorEx intake;
 
     private PIDController extendoController, outController, intakeController;
 //    private PIDController armController;
@@ -154,17 +160,17 @@ public class TransportFSM {
 //    public final int valid = 1;
 //    public final int empty = 2;
     //PID Values:
+    public boolean isHighBucket = true;
 
     public final double extendop = .02, extendoi = .0001, extendod = 0.0001, outp = 0.01, outi = .0001, outd = .0001;
-//    public final double armp = 0, armi = 0, armd = 0, armf = 0;
+    //    public final double armp = 0, armi = 0, armd = 0, armf = 0;
     public double extendopid, outpid, armpid;
 //    public double armff;
 //    public final double arm_ticks_in_degrees = 1425.1 / 360;
 //    public final double zeroOffset = 84;
 
     //SERVO POSITIONS
-    public double rotPos, flapPos, bucketPitchPos;
-    public double specClawRollPos, specClawPos, bucketYawPos;
+    public double rotPos, outWheelPower, bucketPitchPos, flickerPos, specArmPos, specClawPos, specRotPos;
 
     //MOTOR POSITIONS
 
@@ -176,7 +182,6 @@ public class TransportFSM {
     public int extendoTarget, outTarget, armTarget;
 
     //SERVO VALUES
-//TODO: TUNE
     public static double flapOpenRotIntake = .5;
     public static double flapClosedrotHome = .35;
     public static double flapClosedrotIntake = 1;
@@ -186,50 +191,54 @@ public class TransportFSM {
 
     public static double rotIntake = .9;
     public static double rotPrep = .6;
-    public static double rotHome = .05;
+    public static double rotHome = .25;
+    public static double rotOuttake = .25;
 
-    public static double bucketPitchHome = 1;
-    public static double bucketPitchPrep = .75;
-    public static double bucketPitchScore = .55;
+    public static double bucketPitchHome = 0;
+    public static double bucketPitchPrep = .25;
+    public static double bucketPitchScore = .5;
 
-    public static double specClawRollIntake = 0;
-    public static double specClawRollOuttake = 1;
+    public static double specClawRollIntake = 1;
+    public static double specClawRollOuttake = 0;
 
-
-    public static double specClawOpen = 0;
-    public static double specClawClosed = 1;
-
+    public static double specClawOpen = .45;
+    public static double specClawClosed = 0;
+    public static double specArmHome = .11;
+    public static double specArmPrep = .38;
+    public static double specArmScore = .57;
+    public static double specArmClear = .7;
     //MOTOR POSITIONS
-    //TODO: TUNE
-    public static int autoExtendoUpper = 600;
-    public static int extendoUpper = 750;
-    //TODO: set bck to mx lter
+    public static double flickerRetracted = .6;
+    public static double flickerOut = 0.1;
+    public static int autoExtendoUpper = 675;
+    public static int extendoUpper = 765;
     public static int extendoLower = 0;
-    public static int extended = 300;
+    public static int extended = 115;
     public static int transferTrigger = 0;
     public static int increment = 20;
-    public static int outHome = -5;
+    public static int outHome = 0;
     public static int outDump = 700;
-//    public final int dumpTrigger = 600;
+    //    public final int dumpTrigger = 600;
     public static int outLowBucket = 600;
-//    public final int lowFlipTrigger = 300;
-    public static int outHighBucket = 2250;
-//    public final int highFlipTrigger = 2300;
+    //    public final int lowFlipTrigger = 300;
+    public static int outHighBucket = 2200;
+    //    public final int highFlipTrigger = 2300;
 //    public final int armHome = 0;
 //    public final int armLowBar = 700;
 //    public final int armHighBar = 1500;
     public static double intaking = 1;
-    public static double transferring = -.5;
-    public static double maintaining = .2;
+    public static double transferring = -1;
+    public static double maintaining = 0;
     public static double dormant = 0;
+    public static double outtaking = -1;
     ColorSensor colorSensor;
     public static double hue;
     public static int validSample = 0;
-    public static double blueSample = 0; // TODO: update values
-    public static double redSample = 0;
-    public static double yellowSample = 0;
-    public static double hueError = 20;
-    float hsvValues[] = {0F,0F,0F};
+    public static double blueSample = 222;
+    public static double redSample = 23;
+    public static double yellowSample = 84;
+    public static double hueError = 35;
+    public float hsvValues[] = {0F, 0F, 0F};
 
 
     //ElapsedTimes:
@@ -237,9 +246,16 @@ public class TransportFSM {
     ElapsedTime specimenWait;
 
     //Wait Values:
-    public static int shortTransferWait = 1;
+    public static double shortshortTransferWait = .5;
+    public static double longlongTransferWait = 1.75;
+    public static double shortTransferWait = .25;
     public static double longTransferWait = .5;
+    public static double emergencyWit = .75;
     public static double dumpWait = .75;
+    public static double specRotWait = .4;
+    public static double specScoreWait = .5;
+    public static double specRetractWait = .5;
+    public static boolean isSpec = true;
 
     //Get Sample Color
 //    public String getColor() {
@@ -275,7 +291,6 @@ public class TransportFSM {
         EMERGENCY_OUTTAKE,
         TRANSFER,
         PREP_BUCKET,
-        LOW_BUCKET,
         HIGH_BUCKET,
         DUMP
 
@@ -283,15 +298,17 @@ public class TransportFSM {
 
     public SampleTransport sampleTransport = SampleTransport.SAMPLE_HOME;
 
-//    public enum SpecimenTransport {
-//        SPECIMEN_HOME,
-//        INTAKE_SPEC,
-//        LOW_BAR,
-//        HIGH_BAR,
-//        SPECIMEN_SCORE
-//    }
-//
-//    SpecimenTransport specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+    public enum SpecimenTransport {
+        SPECIMEN_HOME,
+        PREP,
+        INTAKE_SPEC,
+        SCORE,
+        OPEN,
+        PREP_HOME,
+        EMERGENCY_PREP
+    }
+
+    public SpecimenTransport specimenTransport = SpecimenTransport.SPECIMEN_HOME;
 
     //Set States
     public int sampleState, specState;
@@ -302,31 +319,40 @@ public class TransportFSM {
 
     public TransportFSM(HardwareMap hardwareMap) {
         zeroLimit = hardwareMap.get(TouchSensor.class, "zeroLimit");
+        outLimit = hardwareMap.get(TouchSensor.class, "outLimit");
         intakeToggle = new Toggle(false);
+        isSpecToggle = new Toggle(true);
 
         sampleWait = new ElapsedTime();
         specimenWait = new ElapsedTime();
         sampleWait.reset();
         specimenWait.reset();
 
+        //TODO: SAVE POSITION FROM AUTO (OR AUTO RESET) FOR MOTORS
+
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
-        extendo.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //TODO: Possibly Reset is Not Needed
-        extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extendoController.setPID(extendop, extendoi, extendod);
-        extendoPos = extendo.getCurrentPosition();
+        if (EncoderStorage.isAuto) {
+            extendo.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            extendoPos = extendo.getCurrentPosition();
+        }
 
         outController = new PIDController(outp, outi, outd);
         out = hardwareMap.get(DcMotorEx.class, "out");
-        out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //TODO: Possibly Reset is Not Needed
-        out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         out.setDirection(DcMotorSimple.Direction.REVERSE);
         outController.setPID(outp, outi, outd);
-        outPos = out.getCurrentPosition();
+        if (EncoderStorage.isAuto) {
+            out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            outPos = out.getCurrentPosition();
+        }
+
 
 //        armController = new PIDController(armp, armi, armd);
 //        arm = hardwareMap.get(DcMotorEx.class, "arm");
-//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //TODO: Possibly Reset is Not Needed
+//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        armController.setPID(armp, armi, armd);
 //        armPos = arm.getCurrentPosition();
@@ -342,18 +368,29 @@ public class TransportFSM {
 //        specClaw = hardwareMap.get(ServoImplEx.class, "specClaw");
         rot = hardwareMap.get(ServoImplEx.class, "rot");
         rot.setDirection(Servo.Direction.REVERSE);
-        flap = hardwareMap.get(ServoImplEx.class, "flap");
-        flap.setDirection(Servo.Direction.REVERSE);
+//        flap = hardwareMap.get(ServoImplEx.class, "flap");
+//        flap.setDirection(Servo.Direction.REVERSE);
         bucketPitch = hardwareMap.get(ServoImplEx.class, "bucketPitch");
         bucketPitch.setDirection(Servo.Direction.REVERSE);
+        specClaw = hardwareMap.get(ServoImplEx.class, "specClaw");
+        specRot = hardwareMap.get(ServoImplEx.class, "specRot");
+        specArm = hardwareMap.get(ServoImplEx.class, "specArm");
+        flicker = hardwareMap.get(ServoImplEx.class, "flicker");
+        outWheel = hardwareMap.get(CRServoImplEx.class, "outWheel");
+        outWheel.setDirection(DcMotorSimple.Direction.REVERSE);
 //        bucketYaw = hardwareMap.get(ServoImplEx.class, "bucketYaw");
 
         intake.setPower(dormant);
+        outWheel.setPower(dormant);
 //        specClawRoll.setPosition(specClawRollIntake);
 //        specClaw.setPosition(specClawOpen);
         rot.setPosition(rotHome);
-        flap.setPosition(flapClosedrotHome);
+//        flap.setPosition(flapClosedrotHome);
         bucketPitch.setPosition(bucketPitchHome);
+        specClaw.setPosition(specClawClosed);
+        specRot.setPosition(specClawRollIntake);
+        specArm.setPosition(specArmHome);
+        flicker.setPosition(flickerRetracted);
 //        bucketYaw.setPosition(bucketYawHome);
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
         colorSensor.enableLed(true);
@@ -367,8 +404,9 @@ public class TransportFSM {
     public void setSpecState(int specState) {
         this.specState = specState;
     }
-    //TODO: MAKE IT SO THE FSM CAN RUN DURING AUTO
+
     public void update() {
+        validSample = updateColor();
         outPos = out.getCurrentPosition();
         outpid = outController.calculate(outPos, outTarget);
         out.setPower(outpid);
@@ -387,49 +425,76 @@ public class TransportFSM {
 //        specClawRoll.setPosition(specClawRollPos);
 //        specClaw.setPosition(specClawPos);
         rot.setPosition(rotPos);
-        flap.setPosition(flapPos);
+//        flap.setPosition(flapPos);
         bucketPitch.setPosition(bucketPitchPos);
 //        bucketYaw.setPosition(bucketYawPos);
+        specArm.setPosition(specArmPos);
+        specClaw.setPosition(specClawPos);
+        specRot.setPosition(specRotPos);
+        flicker.setPosition(flickerPos);
+        outWheel.setPower(outWheelPower);
+
+        validSample = updateColor();
+
+        //TODO: FSM UPDTE FOR UTO
         switch (sampleTransport) {
             case SAMPLE_HOME:
                 intakePower = dormant;
                 rotPos = rotHome;
                 bucketPitchPos = bucketPitchHome;
-                bucketYawPos = bucketYawHome;
+//                bucketYawPos = bucketYawHome;
                 outTarget = outHome;
-                flapPos = flapClosedrotHome;
+//                flapPos = flapClosedrotHome;
+                extendoTarget = extendoLower;
+                outWheelPower = dormant;
+                break;
+            case EXTENDED:
+                outTarget = outHome;
+                bucketPitchPos = bucketPitchHome;
+                intakePower = maintaining;
+                //chnge lter
+                rotPos = rotPrep;
+                extendoTarget = extendoUpper;
+                outWheelPower = dormant;
                 break;
             case INTAKE:
                 intakePower = intaking;
                 rotPos = rotIntake;
-                flapPos = flapClosedrotIntake;
-                break;
-            case EXTENDED:
-                intakePower = intaking;
-                rotPos = rotHome;
-                flapPos = flapClosedrotHome;
-                break;
-            case OUTTAKE:
-                intakePower = transferring;
+                outWheelPower = dormant;
+//                flapPos = flapClosedrotIntake;
                 break;
             case EMERGENCY_OUTTAKE:
-                intakePower = transferring;
+                outWheelPower = dormant;
+                intakePower = outtaking;
+                rotPos = rotOuttake;
+                break;
+            case OUTTAKE:
+                outWheelPower = outtaking;
+                break;
+            case RETRACTING:
+                rotPos = rotHome;
+                intakePower = maintaining;
+                specimenTransport = SpecimenTransport.SPECIMEN_HOME;
                 break;
             case TRANSFER:
-                extendoTarget = 10;
+                rotPos = rotHome;
                 intakePower = transferring;
-                break;
-            case LOW_BUCKET:
-                outTarget = outLowBucket;
+                extendoTarget = extendoLower;
+                if (sampleWait.seconds() > shortTransferWait) {
+                    if (isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                        sampleTransport = SampleTransport.HIGH_BUCKET;
+                    } else if (!isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)){
+                        sampleTransport = SampleTransport.DUMP;
+                    } else {
+                        sampleTransport = SampleTransport.SAMPLE_HOME;
+                    }
+                }
                 break;
             case HIGH_BUCKET:
-                extendoTarget = 75;
+                extendoTarget = extended;
                 intakePower = dormant;
                 outTarget = outHighBucket;
-                break;
-            case DUMP:
-                bucketPitchPos = bucketPitchScore;
-                bucketYawPos = bucketYawSpit;
+                bucketPitchPos = bucketPitchPrep;
                 break;
             default:
                 sampleTransport = sampleTransport.SAMPLE_HOME;
@@ -440,9 +505,39 @@ public class TransportFSM {
             extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-        if (out.getCurrent(CurrentUnit.AMPS) > 5) {
+        if (outLimit.isPressed()) {
             out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
+        switch (specimenTransport) {
+            case SPECIMEN_HOME:
+                specArmPos = specArmHome;
+                specRotPos = specClawRollIntake;
+                specClawPos = specClawOpen;
+                break;
+            case INTAKE_SPEC:
+                specArmPos = specArmHome;
+                specRotPos = specClawRollIntake;
+                specClawPos = specClawClosed;
+                break;
+            case PREP:
+                specArmPos = specArmScore;
+                specRotPos = specClawRollIntake;
+                break;
+            case SCORE:
+                specRotPos = specClawRollOuttake;
+                break;
+            case OPEN:
+                specClawPos = specClawOpen;
+                specArmPos = specArmClear;
+                break;
+            case PREP_HOME:
+                specRotPos = specClawRollIntake;
+                break;
+            case EMERGENCY_PREP:
+                specRotPos = specClawRollIntake;
+                break;
         }
     }
 
@@ -450,25 +545,20 @@ public class TransportFSM {
     public void setExtendoTarget(int val) {
         extendoTarget = val;
     }
-    public void setOutTarget(int val) {
-        outTarget = val;
-    }
 
-    public void setIntakePower(double val) {
-        intakePower = val;
-    }
-
-    public void setRotPos(double val) {
-        rotPos = val;
-    }
-    public void setBucketPitchPos(double val) {
-        bucketPitchPos = val;
+    public void flickerOut(boolean active) {
+        if (active) {
+            flickerPos = flickerOut;
+        } else {
+            flickerPos = flickerRetracted;
+        }
     }
 
 
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
+        validSample = updateColor();
         intakeToggle.update(gamepad1.a);
-
+        isSpecToggle.update(gamepad1.back);
         outPos = out.getCurrentPosition();
         outpid = outController.calculate(outPos, outTarget);
         out.setPower(outpid);
@@ -489,109 +579,174 @@ public class TransportFSM {
 //        specClawRoll.setPosition(specClawRollPos);
 //        specClaw.setPosition(specClawPos);
         rot.setPosition(rotPos);
-        flap.setPosition(flapPos);
+//        flap.setPosition(flapPos);
         bucketPitch.setPosition(bucketPitchPos);
 //        bucketYaw.setPosition(bucketYawPos);
+        specClaw.setPosition(specClawPos);
+        specArm.setPosition(specArmPos);
+        specRot.setPosition(specRotPos);
+        flicker.setPosition(flickerPos);
+        outWheel.setPower(outWheelPower);
 
         switch (sampleTransport) {
             case SAMPLE_HOME:
                 intakePower = dormant;
                 rotPos = rotHome;
                 bucketPitchPos = bucketPitchHome;
-                bucketYawPos = bucketYawHome;
+//                bucketYawPos = bucketYawHome;
                 outTarget = outHome;
-                flapPos = flapClosedrotHome;
-                if ((intakeToggle.value() == false) && extendoPos > extended) {
+//                flapPos = flapClosedrotHome;
+                extendoTarget = extendoLower;
+                outWheelPower = dormant;
+                if (gamepad1.right_trigger > 0) {
                     sampleTransport = SampleTransport.EXTENDED;
                 }
-                if ((intakeToggle.value() == true) && extendoPos >= extended) {
-                    sampleTransport = SampleTransport.INTAKE;
-                }
-                if ((extendoPos <= extended) && gamepad1.left_bumper) {
+                if ((extendoPos <= extended) && gamepad1.left_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
                     sampleWait.reset();
                     sampleTransport = SampleTransport.TRANSFER;
                 }
-                if (gamepad2.a) {
-                    sampleTransport = SampleTransport.LOW_BUCKET;
-                }
-                if (gamepad1.right_bumper) {
-                    sampleTransport = SampleTransport.HIGH_BUCKET;
-                }
-                if (gamepad2.x) {
+                if (gamepad1.y && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
                     sampleTransport = SampleTransport.DUMP;
+                }
+                if (gamepad1.right_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                    sampleTransport = SampleTransport.HIGH_BUCKET;
                 }
                 break;
             case EXTENDED:
+                outTarget = outHome;
+                bucketPitchPos = bucketPitchHome;
                 intakePower = maintaining;
                 //chnge lter
                 rotPos = rotPrep;
+                extendoTarget = extendoUpper;
+                outWheelPower = dormant;
                 if (gamepad1.left_bumper) {
+                    intakeToggle.value = false;
                     sampleWait.reset();
+                    isHighBucket = true;
                     sampleTransport = SampleTransport.RETRACTING;
                 }
-                if (extendoPos < extended) {
+                if (gamepad1.right_bumper) {
+                    intakeToggle.value = false;
+                    sampleWait.reset();
+                    isHighBucket = false;
+                    sampleTransport = SampleTransport.RETRACTING;
+                }
+                if (gamepad1.left_trigger > 0) {
                     sampleTransport = SampleTransport.SAMPLE_HOME;
                 }
+//                if (extendoPos < extended) {
+//                    sampleTransport = SampleTransport.SAMPLE_HOME;
+//                }
                 if (intakeToggle.value() == true) {
                     sampleTransport = SampleTransport.INTAKE;
+                }
+                if (gamepad1.y) {
+                    sampleWait.reset();
+                    sampleTransport = SampleTransport.EMERGENCY_OUTTAKE;
+                }
+                if (validSample == 0) {
+                    sampleWait.reset();
+                    sampleTransport = SampleTransport.OUTTAKE;
                 }
                 break;
             case INTAKE:
                 intakePower = intaking;
                 rotPos = rotIntake;
+                outWheelPower = dormant;
 //                flapPos = flapClosedrotIntake;
                 if (intakeToggle.value() == false) {
                     sampleTransport = SampleTransport.EXTENDED;
                 }
-                if (gamepad1.b) {
+                if (gamepad1.left_bumper || (validSample == 1 && !isSpec)) {
+                    intakeToggle.value = false;
+                    sampleWait.reset();
+                    isHighBucket = true;
+                    sampleTransport = SampleTransport.RETRACTING;
+                }
+                if (gamepad1.right_bumper || (validSample == 1 && isSpec)) {
+                    intakeToggle.value = false;
+                    sampleWait.reset();
+                    isHighBucket = false;
+                    sampleTransport = SampleTransport.RETRACTING;
+                }
+                if (gamepad1.y) {
+                    sampleWait.reset();
+                    sampleTransport = SampleTransport.EMERGENCY_OUTTAKE;
+                }
+                if (validSample == 0) {
                     sampleWait.reset();
                     sampleTransport = SampleTransport.OUTTAKE;
                 }
                 break;
-            case OUTTAKE:
-                intakePower = transferring;
-                if (sampleWait.seconds() >= longTransferWait) {
-                    sampleTransport = SampleTransport.INTAKE;
+            case EMERGENCY_OUTTAKE:
+                outWheelPower = intaking;
+                intakePower = outtaking;
+                rotPos = rotIntake;
+                if (sampleWait.seconds() > emergencyWit) {
+                    sampleTransport = SampleTransport.EXTENDED;
                 }
                 break;
-            case EMERGENCY_OUTTAKE:
-                intakePower = transferring;
-                if (sampleWait.seconds() >= longTransferWait) {
+            case OUTTAKE:
+                outWheelPower = outtaking;
+                if ((validSample != 0)) {
                     sampleTransport = SampleTransport.INTAKE;
                 }
+                if (gamepad1.y) {
+                    sampleWait.reset();
+                    sampleTransport = SampleTransport.EMERGENCY_OUTTAKE;
+                }
+//                if ((sampleWait.seconds() >= longlongTransferWait) && (validSample == 0)) {
+//                    sampleWait.reset();
+//                    sampleTransport = SampleTransport.EMERGENCY_OUTTAKE;
+//                }
                 break;
             case RETRACTING:
                 rotPos = rotHome;
-                intakePower = maintaining;
-                //TODO: SWITCH BCK TO MINTINING LTER, HRDWRE BROKEN
-                if (sampleWait.seconds() >= longTransferWait); {
-                    extendoTarget = -10;
+                outWheelPower = intaking;
+                specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+                if (sampleWait.seconds() > emergencyWit) {
+                    intakePower = dormant;
+                    extendoTarget = -5;
                 }
-                if (intakeToggle.value()) {
-                    sampleTransport = SampleTransport.INTAKE;
+                if (gamepad1.left_bumper) {
+                    isHighBucket = true;
                 }
-                if (extendoPos < 100 || gamepad1.right_bumper) {
-                    sampleWait.reset();
-                    sampleTransport = SampleTransport.TRANSFER;
+                if (gamepad1.right_bumper) {
+                    isHighBucket = false;
+                }
+                if (gamepad1.right_trigger > 0) {
+                    sampleTransport = SampleTransport.EXTENDED;
+                }
+                if (isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                    if (extendoPos < 50 || gamepad1.y) {
+                        sampleWait.reset();
+                        sampleTransport = SampleTransport.TRANSFER;
+                    }
+                } else {
+                    if (extendoPos < 50 || gamepad1.y) {
+                        sampleWait.reset();
+                        sampleTransport = SampleTransport.TRANSFER;
+                    }
                 }
                 break;
             case TRANSFER:
                 rotPos = rotHome;
                 intakePower = transferring;
-                extendoTarget = -3;
+                outWheelPower = intaking;
+                extendoTarget = extendoLower;
                 if (sampleWait.seconds() > shortTransferWait) {
-                    sampleTransport = SampleTransport.HIGH_BUCKET;
-                }
-                break;
-            case LOW_BUCKET:
-                outTarget = outLowBucket;
-                bucketPitchPos = bucketPitchPrep;
-                if (gamepad1.y) {
-                    sampleWait.reset();
-                    sampleTransport = SampleTransport.DUMP;
+                    if (isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                        sampleTransport = SampleTransport.HIGH_BUCKET;
+                    } else if (!isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)){
+                        sampleTransport = SampleTransport.SAMPLE_HOME;
+                    } else {
+                        sampleTransport = SampleTransport.SAMPLE_HOME;
+                    }
                 }
                 break;
             case HIGH_BUCKET:
+                outWheelPower = dormant;
                 extendoTarget = extended;
                 intakePower = dormant;
                 outTarget = outHighBucket;
@@ -599,26 +754,28 @@ public class TransportFSM {
                 if (gamepad1.y) {
                     sampleTransport = SampleTransport.DUMP;
                 }
+                if (gamepad1.x) {
+                    sampleTransport = SampleTransport.SAMPLE_HOME;
+                }
                 break;
             case DUMP:
+                outWheelPower = dormant;
+                extendoTarget = extended;
                 bucketPitchPos = bucketPitchScore;
-                bucketYawPos = bucketYawSpit;
-                if (extendoPos > extended + 25) {
+//                bucketYawPos = bucketYawSpit;
+                intakePower = dormant;
+                if (gamepad1.left_trigger > 0) {
                     sampleTransport = SampleTransport.SAMPLE_HOME;
+                }
+                if (gamepad1.right_trigger > 0) {
+                    sampleTransport = SampleTransport.EXTENDED;
                 }
                 break;
             default:
                 sampleTransport = sampleTransport.SAMPLE_HOME;
         }
-        if (gamepad1.left_trigger > 0 && extendoTarget > extendoLower) {
-            extendoTarget -= increment;
-        }
 
-        if (gamepad1.right_trigger > 0 && extendoTarget <= extendoUpper) {
-            extendoTarget += increment;
-        }
-
-        if (gamepad1.x && sampleTransport != SampleTransport.SAMPLE_HOME) {
+        if (gamepad1.dpad_right && sampleTransport != SampleTransport.SAMPLE_HOME) {
 //            extendoTarget = extendoLower;
             sampleTransport = SampleTransport.SAMPLE_HOME;
 //            specimenTransport = SpecimenTransport.SPECIMEN_HOME;
@@ -629,10 +786,86 @@ public class TransportFSM {
             extendo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-        if ((out.getCurrent(CurrentUnit.AMPS) > 4.5 || gamepad2.y) && outTarget == outHome) {
+        if (outLimit.isPressed()) {
             out.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
+
+        if (gamepad1.dpad_left) {
+            flickerOut(true);
+        } else {
+            flickerOut(false);
+        }
+
+        if (isSpecToggle.value() == true) {
+            isSpec = true;
+        } else {
+            isSpec = false;
+        }
+
+        switch (specimenTransport) {
+            case SPECIMEN_HOME:
+                specArmPos = specArmHome;
+                specRotPos = specClawRollIntake;
+                specClawPos = specClawOpen;
+                if (gamepad1.b) {
+                    specimenTransport = SpecimenTransport.INTAKE_SPEC;
+                }
+                break;
+            case INTAKE_SPEC:
+                specArmPos = specArmHome;
+                specRotPos = specClawRollIntake;
+                specClawPos = specClawClosed;
+                if (gamepad1.x && (sampleTransport != SampleTransport.HIGH_BUCKET && sampleTransport != SampleTransport.DUMP)) {
+                    specimenWait.reset();
+                    specimenTransport = SpecimenTransport.PREP;
+                }
+                break;
+            case PREP:
+                specArmPos = specArmScore;
+                specRotPos = specClawRollIntake;
+                if (specimenWait.seconds() > specRotWait) {
+                    specimenWait.reset();
+                    specimenTransport = SpecimenTransport.SCORE;
+                }
+                break;
+            case SCORE:
+                specRotPos = specClawRollOuttake;
+                if (gamepad1.b) {
+                    specimenWait.reset();
+                    specimenTransport = SpecimenTransport.EMERGENCY_PREP;
+                }
+                if (gamepad1.x) {
+                    specimenWait.reset();
+                    specimenTransport = SpecimenTransport.OPEN;
+                }
+                break;
+            case OPEN:
+                specClawPos = specClawOpen;
+                specArmPos = specArmClear;
+                if (specimenWait.seconds() > specRetractWait) {
+                    specimenWait.reset();
+                    specimenTransport = SpecimenTransport.PREP_HOME;
+                }
+                break;
+            case PREP_HOME:
+                specRotPos = specClawRollIntake;
+                if (specimenWait.seconds() > specScoreWait) {
+                    specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+                }
+                break;
+            case EMERGENCY_PREP:
+                specRotPos = specClawRollIntake;
+                if (specimenWait.seconds() > specScoreWait) {
+                    specimenTransport = SpecimenTransport.INTAKE_SPEC;
+                }
+                break;
+        }
+
+        if (gamepad1.dpad_down && specimenTransport != SpecimenTransport.SPECIMEN_HOME) {
+            specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+        }
+
         /*
         update():
         if intaking:
@@ -646,16 +879,34 @@ public class TransportFSM {
         color is purpleRGB
          */
 
-
-
     }
 
     public int updateColor() {
         Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
         hue = hsvValues[0];
-        
+        if (Math.abs(hue - yellowSample) < hueError) {
+            if (isSpec) {
+                return 0;
+            } else {
+                return 1;
+            }
+        }
+        if (Math.abs(hue - redSample) < hueError) {
+            if (isRed) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        if (Math.abs(hue - blueSample) < hueError) {
+            if (isRed) {
+                return 0;
+            } else {
+                return 1;
+            }
+        }
+        return 2;
     }
-
 
 //    public void updateFSM() {
 //        switch (sampleTransport) {

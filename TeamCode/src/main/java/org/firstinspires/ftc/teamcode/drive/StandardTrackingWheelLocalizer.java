@@ -36,8 +36,11 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
 
     public static double FORWARD_OFFSET = -0.5; // in; offset of the lateral wheel
 // TODO TUNE TELEMETRY X_MULTIPLIER + Y_MULTIPLIER MEASURED BY MEASURED DISTANCE / TELEMETRY DISTANCE TRAVELED
-    public static double X_MULTIPLIER = 1.01624037; //Multipl   ier in X direction
-    public static double Y_MULTIPLIER = 0.9916484815; //Multiplier in Y direction
+//    public static double X_MULTIPLIER = 1.01624037; //Multipl   ier in X direction
+//    public static double Y_MULTIPLIER = 0.9916484815; //Multiplier in Y direction
+
+    public static double X_MULTIPLIER = 1; //Multipl   ier in X direction
+    public static double Y_MULTIPLIER = 1; //Multiplier in Y direction
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
 
@@ -53,7 +56,7 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         lastEncPositions = lastTrackingEncPositions;
         lastEncVels = lastTrackingEncVels;
 
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "frontLeft"));
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "backLeft"));
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "frontRight"));
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "backRight"));
 

@@ -5,7 +5,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.auton.Auton;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.teleop.transport.TransportFSM;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -13,7 +12,6 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Autonomous(preselectTeleOp="CosmoboticsTeleOp")
 @Config
 public class SampleAuto extends LinearOpMode {
-    Auton Auton1;
     TransportFSM transport;
     SampleMecanumDrive drive;
     public Pose2d StartPose, firstBucketPose, parkPose, bucketPose, firstSamplePose, secondSamplePose, thirdSamplePose, thirdBucketPose;
@@ -44,6 +42,8 @@ public class SampleAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        drive = new SampleMecanumDrive(hardwareMap);
+        transport = new TransportFSM(hardwareMap);
         StartPose = new Pose2d(-22, -60, Math.toRadians(0));
         firstBucketPose = new Pose2d(FirstBucketX, FirstBucketY, FirstBucketHeading);
         bucketPose = new Pose2d(BucketX, BucketY, BucketHeading);
@@ -52,11 +52,6 @@ public class SampleAuto extends LinearOpMode {
         thirdSamplePose  = new Pose2d(ThirdSampleX, ThirdSampleY, ThirdSampleHeading);
         thirdBucketPose = new Pose2d(ThirdBucketX, ThirdBucketY, ThirdBucketHeading);
         parkPose = new Pose2d(parkX, parkY, parkHeading);
-        Auton1 = new Auton(hardwareMap);
-        transport = Auton1.transport();
-        drive = Auton1.drive();
-//        AllianceStorage.isRed = false;
-//        BlueClose.isLeftClaw = true; //YELLOW PIXEL IN THIS CLAW
         drive.setPoseEstimate(StartPose);
 
         //Board Auton:
@@ -178,74 +173,11 @@ public class SampleAuto extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(-30, -10, 3.1415), Math.toRadians(-15))
                 .splineToLinearHeading(new Pose2d(-20, -10, 3.1415), Math.toRadians(0))
                 .build();
-//
-//
-//
-////
-////        TrajectorySequence leftPixel = drive.trajectorySequenceBuilder(BlueClose.blueLeftBoard)
-////                .waitSeconds(2)
-////                .addTemporalMarker(()-> {transport.closeIntaking();})
-////                .lineToSplineHeading(BlueClose.blueLeftClose)
-////                .addTemporalMarker(()->{
-////                   transport.fullRightClaw();
-////                })
-////                .build();
-////
-////        TrajectorySequence centerBoard = drive.trajectorySequenceBuilder(startPose)
-//////                .addTemporalMarker(()->{transport.closeIntaking();})
-//////                .waitSeconds(4)
-//////                .addTemporalMarker(()->{
-//////                    transport.fullRightClaw();
-//////                })
-//////                .waitSeconds(.2)
-//////                .addTemporalMarker(()->{transport.two();})
-////                .lineToSplineHeading(BlueClose.blueCenterBoard)
-//////                .addTemporalMarker(()->{
-//////                        transport.fullLeftClaw();
-//////                })
-//////                .addTemporalMarker(()->{transport.reset();})
-////                .build();
-////
-////        TrajectorySequence centerPixel = drive.trajectorySequenceBuilder(BlueClose.blueCenterBoard)
-////                .waitSeconds(2)
-////                //                .addTemporalMarker(()-> {transport.closeIntaking();})
-////                .lineToSplineHeading(BlueClose.blueCenterClose)
-//////                .addTemporalMarker(()->{
-//////                   transport.fullRightClaw();
-//////                })
-////                .build();
-////
-////        TrajectorySequence rightBoard = drive.trajectorySequenceBuilder(startPose)
-//////                .UNSTABLE_addTemporalMarkerOffset(1, () -> {transport.two();})
-////                .lineToSplineHeading(BlueClose.blueRightBoard)
-//////                .addTemporalMarker(()->{
-//////                    transport.fullLeftClaw();
-//////                })
-//////                .waitSeconds(.2)
-//////                .addTemporalMarker(()->{transport.farIntaking();})
-//////                .waitSeconds(4)
-//////                .addTemporalMarker(()->{
-//////                    transport.fullRightClaw();
-//////                })
-//////                .waitSeconds(.2)
-//////                .addTemporalMarker(()->{
-//////                    transport.closeIntaking();
-//////                })
-////                .build();
-////
-////        TrajectorySequence rightPixel = drive.trajectorySequenceBuilder(BlueClose.blueRightBoard)
-////                .waitSeconds(2)
-////                //                .addTemporalMarker(()-> {transport.closeIntaking();})
-////                .lineToSplineHeading(BlueClose.blueRightClose)
-//////                .addTemporalMarker(()->{
-//////                   transport.fullRightClaw();
-//////                })
-////                .build();
+
+        TransportFSM.isSpec = false;
 
         while (opModeInInit() && !isStopRequested()) {
-//            BlueClose.vision();
-//            telemetry.addData("Spike Pos", BlueClose.spikePos);
-//            telemetry.update();
+            //TODO: TELEMETRY
         }
 
         waitForStart();
@@ -259,49 +191,6 @@ public class SampleAuto extends LinearOpMode {
             followTrajectory(thirdSample);
             followTrajectory(fourthBucket);
             followTrajectory(park);
-
-
-//            switch (BlueClose.spikePos) {
-//                case LEFT:
-//                    followTrajectory(leftBoard);
-//                    followTrajectory(BlueClose.LeftBoardPark(true));
-//                    sleep(30000);
-//                case CENTER:
-//                    followTrajectory(centerBoard);
-//                    followTrajectory(BlueClose.LeftBoardPark(true));
-//                    sleep(30000);
-//                case RIGHT:
-//                    followTrajectory(rightBoard);
-//                    followTrajectory(BlueClose.LeftBoardPark(true));
-//                    sleep(30000);
-//            }
-
-            //TODO: Test All Trajectories:
-            //Travel to Board First
-//            followTrajectory(leftBoard);
-//            followTrajectory(centerBoard);
-//            followTrajectory(firstSample);
-//            followTrajectory(bucket1);
-//            followTrajectory(mainSample);
-//            followTrajectory(bucket2);
-//            followTrajectory(mainSample);
-//            followTrajectory(bucket2);
-            //Traveling to Spike Mark Second
-//            followTrajectory(leftPixel);
-//            followTrajectory(centerPixel);
-//            followTrajectory(rightPixel);
-            //Parking Last
-            //Parking from Left Spike
-//            followTrajectory(BlueClose.LeftPark(true));
-//            followTrajectory(BlueClose.LeftPark(false));
-            //Parking from Center Spike
-//            followTrajectory(BlueClose.CenterPark(true));
-//            followTrajectory(BlueClose.CenterPark(false));
-            //Parking from RightSpike
-//            followTrajectory(BlueClose.RightPark(true));
-//            followTrajectory(BlueClose.RightBoardToLeftStack(false));
-//            followTrajectory(BlueClose.RightBoardToLeftStack(true));
-//            followTrajectory(BlueClose.RightPark(false));
         }
     }
 }

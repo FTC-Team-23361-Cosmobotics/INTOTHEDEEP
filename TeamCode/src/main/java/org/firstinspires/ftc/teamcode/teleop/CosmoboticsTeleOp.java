@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
 import org.firstinspires.ftc.teamcode.teleop.misc.Misc;
 import org.firstinspires.ftc.teamcode.teleop.transport.TransportFSM;
+import org.firstinspires.ftc.teamcode.teleop.transport.EncoderStorage;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class CosmoboticsTeleOp extends OpMode {
 
     @Override
     public void init() {
+        EncoderStorage.isAuto = true;
+        //TODO: CHNGE TO FLSE N CRETE UTO THT JUST RESETS ENCODERS
         drive = new Drive(hardwareMap);
         transportFSM = new TransportFSM(hardwareMap);
 
@@ -54,16 +57,23 @@ public class CosmoboticsTeleOp extends OpMode {
         telemetry.addData("Out Pos:", transportFSM.outPos);
         telemetry.addData("Out Target:", transportFSM.outTarget);
         telemetry.addData("Rotation Pos:", transportFSM.rotPos);
-        telemetry.addData("Intake Toggle:", transportFSM.intakeToggle.value());
+//        telemetry.addData("Intake Toggle:", transportFSM.intakeToggle.value());
         telemetry.addData("Bucket Pos:", transportFSM.bucketPitchPos);
-        telemetry.addData("Flp Pos:", transportFSM.flapPos);
+//        telemetry.addData("Flp Pos:", transportFSM.flapPos);
         telemetry.addData("Gmepdnot2 true", gamepad1.left_trigger > 0);
+        telemetry.addData("out limit", transportFSM.outLimit.isPressed());
         telemetry.addData("gmpdnot2 rkght", gamepad1.right_trigger > 0);
         telemetry.addData("extendolesthnuper ", transportFSM.extendoTarget <= transportFSM.extendoUpper);
         telemetry.addData("extendo voltge", transportFSM.extendo.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("out voltge", transportFSM.out.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("ero limit", transportFSM.zeroLimit.isPressed());
-        telemetry.addData("test", transportFSM.test);
+        telemetry.addData("bleftPower", Drive.backLeft.getPower());
+        telemetry.addData("brightPower", Drive.backRight.getPower());
+        telemetry.addData("fleftPower", Drive.frontLeft.getPower());
+        telemetry.addData("frightPower", Drive.frontRight.getPower());
+        telemetry.addData("intke power", transportFSM.intakePower);
+        telemetry.addData("hue", TransportFSM.hue);
+        telemetry.addData("vlid smple", TransportFSM.validSample);
         telemetry.addData("Heading", drive.botHeading);
         telemetry.addData("Slowmode:", drive.slowmode.value());
     }

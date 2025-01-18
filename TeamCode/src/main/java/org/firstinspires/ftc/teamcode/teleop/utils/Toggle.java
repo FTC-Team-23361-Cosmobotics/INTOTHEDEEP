@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop.utils;
 
 public class Toggle {
-    private boolean value;
+    public boolean value;
 
     // If the button is being held, the toggle is locked from changing until the button is let go
     private boolean buttonLock = false;

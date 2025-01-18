@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -21,24 +22,33 @@ import org.firstinspires.ftc.teamcode.teleop.drive.Drive;
 @Config
 @TeleOp
 public class PIDFTransport extends OpMode {
+    private Drive drive;
     private DcMotorEx frontLeft, frontRight, backLeft, backRight;
-    private DcMotorEx extendo, out;
+    public static DcMotorEx extendo, out, intake;
     private PIDController extendoController, outController;
     public static double extendop = .02, extendoi = 0.0001, extendod = 0.0001;
     public static int extendoTarget = 0;
     public static double outp = 0.007, outi = 0, outd = 0.0004;
     public static int outTarget = 0;
 
-    private ServoImplEx outClaw, rot, outArm, bucketPitch;
-    private CRServoImplEx leftRot, rightRot;
+    private ServoImplEx specClaw, specRot, rot, specArm, bucketPitch, flicker;
+    private CRServoImplEx outWheel;
 
-    public static double rotPos;
-
-    public static double outClawPos;
+    public static double rotPos, intakePower, specClawPos, specRotPos, specArmPos, bucketPitchPos, flickerPos;
 
     public static double frontLeftPower, backLeftPower, frontRightPower, backRightPower;
 
-    public static double outArmPos, bucketPos;
+    public static double outArmPos, bucketPos, outWheelPower;
+
+    //TODO: TUNE
+//    public static double specClawRollIntake = .78;
+//    public static double specClawRollOuttake = 0;
+//
+//    public static double specClawOpen = .46;
+//    public static double specClawClosed = 1;
+//    public static double specArmHome = .125;
+//    public static double specArmPrep = .38;
+//    public static double specArmScore = .8;
     /*
     Notes:
     OutArm
@@ -72,17 +82,19 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void init() {
-        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+//        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+//        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+//        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+//        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+//        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+//        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rot = hardwareMap.get(ServoImplEx.class, "rot");
         rot.setDirection(Servo.Direction.REVERSE);
         bucketPitch = hardwareMap.get(ServoImplEx.class, "bucketPitch");
-        bucketPitch.setDirection(Servo.Direction.REVERSE);
+        specClaw = hardwareMap.get(ServoImplEx.class, "specClaw");
+        specRot = hardwareMap.get(ServoImplEx.class, "specRot");
+        specArm = hardwareMap.get(ServoImplEx.class, "specArm");
 
         extendoController = new PIDController(extendop, extendoi, extendod);
         extendo = hardwareMap.get(DcMotorEx.class, "extendo");
@@ -95,38 +107,52 @@ public class PIDFTransport extends OpMode {
         out.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         out.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        outWheel = hardwareMap.get(CRServoImplEx.class, "outWheel");
+
+        flicker = hardwareMap.get(ServoImplEx.class, "flicker");
+
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+
+        drive = new Drive(hardwareMap);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     @Override
     public void loop() {
-        frontLeft.setPower(frontLeftPower);
-        backLeft.setPower(backLeftPower);
-        frontRight.setPower(frontRightPower);
-        backRight.setPower(backRightPower);
-bucketPitch.setPosition(bucketPos);
-
+        drive.update(gamepad1);
+//        frontLeft.setPower(frontLeftPower);
+//        backLeft.setPower(backLeftPower);
+//        frontRight.setPower(frontRightPower);
+//        backRight.setPower(backRightPower);
+        bucketPitch.setPosition(bucketPos);
         rot.setPosition(rotPos);
-        outController.setPID(outp, outi, outd);
-        int outPos = out.getCurrentPosition();
-        double outpid = outController.calculate(outPos, outTarget);
-        out.setPower(outpid);
+        intake.setPower(intakePower);
+        specArm.setPosition(specArmPos);
+        specClaw.setPosition(specClawPos);
+        specRot.setPosition(specRotPos);
+        flicker.setPosition(flickerPos);
+        outWheel.setPower(outWheelPower);
 
-        extendoController.setPID(extendop, extendoi, extendod);
-        int extendoPos = extendo.getCurrentPosition();
-        double extendopid = extendoController.calculate(extendoPos, extendoTarget);
-        extendo.setPower(extendopid);
+//        outController.setPID(outp, outi, outd);
+//        int outPos = out.getCurrentPosition();
+//        double outpid = outController.calculate(outPos, outTarget);
+//        out.setPower(outpid);
+//
+//        extendoController.setPID(extendop, extendoi, extendod);
+//        int extendoPos = extendo.getCurrentPosition();
+//        double extendopid = extendoController.calculate(extendoPos, extendoTarget);
+//        extendo.setPower(extendopid);
 
 //        if (!gamepad1.b) {
 //            slidesMotor.setPower(slidespower);
 //            armMotor.setPower(armPower);
 //        }
 
-        telemetry.addData("Extendo Pos:", extendoPos);
-        telemetry.addData("Extendo Target:", extendoTarget);
-        telemetry.addData("Out Pos:", outPos);
-        telemetry.addData("Out Target:", outTarget);
-        telemetry.update();
+//        telemetry.addData("Extendo Pos:", extendoPos);
+//        telemetry.addData("Extendo Target:", extendoTarget);
+//        telemetry.addData("Out Pos:", outPos);
+//        telemetry.addData("Out Target:", outTarget);
+//        telemetry.update();
     }
 }

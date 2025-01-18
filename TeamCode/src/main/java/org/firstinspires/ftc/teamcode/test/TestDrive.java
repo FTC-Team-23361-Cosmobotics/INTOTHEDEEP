@@ -1,21 +1,25 @@
-package org.firstinspires.ftc.teamcode.teleop.drive;
+package org.firstinspires.ftc.teamcode.test;
 
-import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
-
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+
+import static org.firstinspires.ftc.teamcode.teleop.AllianceStorage.isRed;
+
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.teleop.utils.Toggle;
 
-public class Drive {
+@Config
+@TeleOp
+public class TestDrive extends OpMode {
     public static DcMotorEx frontRight;
     public static DcMotorEx frontLeft;
     public static DcMotorEx backRight;
@@ -23,8 +27,9 @@ public class Drive {
 
     public static IMU imu;
     public double botHeading, targetHeading;
+    public static double turnP = 0, turnI = 0, turnD = 0;
 
-    private PIDFController turnController = new PIDFController(new PIDCoefficients(.5, 0, 0.002));
+    private PIDFController turnController = new PIDFController(new PIDCoefficients(turnP, turnI, turnD));
 
     public double IMUOffset;
     public double RedOffset = Math.toRadians(90);
@@ -34,9 +39,8 @@ public class Drive {
 
     public Toggle slowmode;
 
-    public double turnP = 0, turnI = 0, turnD = 0, turnF = 0;
-
-    public Drive(HardwareMap hardwareMap) {
+    @Override
+    public void init() {
         slowmode = new Toggle(false);
         frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
         frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
@@ -78,7 +82,8 @@ public class Drive {
         }
     }
 
-    public void update(Gamepad gamepad1) {
+    @Override
+    public void loop() {
         if (RobotCentric == false) {
             botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             //Field Centric Drive:
@@ -107,10 +112,10 @@ public class Drive {
 
             //Autoturn Logic:
             if (gamepad1.right_bumper) {
-                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
+                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(270));
             }
             if (gamepad1.left_bumper) {
-                    rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(325));
+                rx = calcRotBasedOnIdeal(botHeading, Math.toRadians(325));
             }
 
             double frontLeftPower = (rotY + rotX + rx) / denominator;
@@ -133,13 +138,13 @@ public class Drive {
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
-//            if (rx == 0){
-//                rx = calcRotBasedOnIdeal(botHeading, targetHeading);
-//            }
-//            else {
-//                rx = gamepad1.right_stick_x;
-//                targetHeading = botHeading;
-//            }
+            if (rx == 0){
+                rx = calcRotBasedOnIdeal(botHeading, targetHeading);
+            }
+            else {
+                rx = gamepad1.right_stick_x;
+                targetHeading = botHeading;
+            }
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
