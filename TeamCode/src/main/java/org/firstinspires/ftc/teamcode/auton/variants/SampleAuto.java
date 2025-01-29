@@ -177,6 +177,7 @@ public class SampleAuto extends LinearOpMode {
         TransportFSM.isSpec = false;
 
         while (opModeInInit() && !isStopRequested()) {
+            //TODO: cll resetPosIMU()
             //TODO: TELEMETRY
         }
 

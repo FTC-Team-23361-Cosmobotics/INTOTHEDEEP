@@ -120,7 +120,7 @@ public class PIDFTransport extends OpMode {
 
     @Override
     public void loop() {
-        drive.update(gamepad1);
+        drive.update(gamepad1, gamepad2);
 //        frontLeft.setPower(frontLeftPower);
 //        backLeft.setPower(backLeftPower);
 //        frontRight.setPower(frontRightPower);
@@ -134,10 +134,10 @@ public class PIDFTransport extends OpMode {
         flicker.setPosition(flickerPos);
         outWheel.setPower(outWheelPower);
 
-//        outController.setPID(outp, outi, outd);
-//        int outPos = out.getCurrentPosition();
-//        double outpid = outController.calculate(outPos, outTarget);
-//        out.setPower(outpid);
+        outController.setPID(outp, outi, outd);
+        int outPos = out.getCurrentPosition();
+        double outpid = outController.calculate(outPos, outTarget);
+        out.setPower(outpid);
 //
 //        extendoController.setPID(extendop, extendoi, extendod);
 //        int extendoPos = extendo.getCurrentPosition();
@@ -151,8 +151,8 @@ public class PIDFTransport extends OpMode {
 
 //        telemetry.addData("Extendo Pos:", extendoPos);
 //        telemetry.addData("Extendo Target:", extendoTarget);
-//        telemetry.addData("Out Pos:", outPos);
-//        telemetry.addData("Out Target:", outTarget);
-//        telemetry.update();
+        telemetry.addData("Out Pos:", outPos);
+        telemetry.addData("Out Target:", outTarget);
+        telemetry.update();
     }
 }

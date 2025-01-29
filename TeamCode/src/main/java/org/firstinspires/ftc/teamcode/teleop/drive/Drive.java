@@ -21,7 +21,7 @@ public class Drive {
     public static DcMotorEx backRight;
     public static DcMotorEx backLeft;
 
-    public static IMU imu;
+//    public static IMU imu;
     public double botHeading, targetHeading;
 
     private PIDFController turnController = new PIDFController(new PIDCoefficients(.5, 0, 0.002));
@@ -58,16 +58,16 @@ public class Drive {
         backRight.setDirection(DcMotorSimple.Direction.FORWARD);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        imu = hardwareMap.get(IMU.class, "imu");
-        // Adjust the orientation parameters to match your robot
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
-        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
-        imu.initialize(parameters);
-        imu.resetYaw();
-
-        botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+//        imu = hardwareMap.get(IMU.class, "imu");
+//        // Adjust the orientation parameters to match your robot
+//        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+//                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+//                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+//        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+//        imu.initialize(parameters);
+//        imu.resetYaw();
+//
+//        botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         targetHeading = botHeading;
 
@@ -78,9 +78,9 @@ public class Drive {
         }
     }
 
-    public void update(Gamepad gamepad1) {
+    public void update(Gamepad gamepad1, Gamepad gamepad2) {
         if (RobotCentric == false) {
-            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+//            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             //Field Centric Drive:
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x;
@@ -100,7 +100,7 @@ public class Drive {
             // but only if at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
 
-            slowmode.update(gamepad1.start);
+            slowmode.update(gamepad2.dpad_down);
             if (slowmode.value() == true) {
                 denominator *= 2;
             }
@@ -129,7 +129,7 @@ public class Drive {
                 resetImu();
             }
         } else {
-            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+//            botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
@@ -146,7 +146,7 @@ public class Drive {
             // but only if at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-            slowmode.update(gamepad1.start);
+            slowmode.update(gamepad2.dpad_down);
             if (slowmode.value() == true) {
                 denominator *= 2;
             }
@@ -188,6 +188,6 @@ public class Drive {
 
     public void resetImu () {
         IMUOffset = 0;
-        imu.resetYaw();
+//        imu.resetYaw();
     }
 }

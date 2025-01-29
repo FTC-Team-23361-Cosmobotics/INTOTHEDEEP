@@ -49,7 +49,7 @@ public class CosmoboticsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        drive.update(gamepad1);
+        drive.update(gamepad1, gamepad2);
         transportFSM.update(gamepad1, gamepad2);
 
         telemetry.addData("Extendo Pos:", transportFSM.extendoPos);

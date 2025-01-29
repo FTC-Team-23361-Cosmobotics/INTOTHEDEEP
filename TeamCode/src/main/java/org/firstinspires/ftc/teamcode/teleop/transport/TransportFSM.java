@@ -194,19 +194,19 @@ public class TransportFSM {
     public static double rotHome = .25;
     public static double rotOuttake = .25;
 
-    public static double bucketPitchHome = 0;
-    public static double bucketPitchPrep = .25;
-    public static double bucketPitchScore = .5;
+    public static double bucketPitchHome = .815;
+    public static double bucketPitchPrep = .55;
+    public static double bucketPitchScore = .3;
 
-    public static double specClawRollIntake = 1;
-    public static double specClawRollOuttake = 0;
+    public static double specClawRollIntake = .15;
+    public static double specClawRollOuttake = .86;
 
-    public static double specClawOpen = .45;
+    public static double specClawOpen = .6;
     public static double specClawClosed = 0;
-    public static double specArmHome = .11;
-    public static double specArmPrep = .38;
-    public static double specArmScore = .57;
-    public static double specArmClear = .7;
+    public static double specArmHome = .05;
+    public static double specRotPrep = .2;
+    public static double specArmScore = .53;
+    public static double specArmClear = .25;
     //MOTOR POSITIONS
     public static double flickerRetracted = .6;
     public static double flickerOut = 0.1;
@@ -231,6 +231,7 @@ public class TransportFSM {
     public static double maintaining = 0;
     public static double dormant = 0;
     public static double outtaking = -1;
+//    public static double flicking = -.35;
     ColorSensor colorSensor;
     public static double hue;
     public static int validSample = 0;
@@ -252,9 +253,9 @@ public class TransportFSM {
     public static double longTransferWait = .5;
     public static double emergencyWit = .75;
     public static double dumpWait = .75;
-    public static double specRotWait = .4;
-    public static double specScoreWait = .5;
-    public static double specRetractWait = .5;
+    public static double specRotWait = .2;
+    public static double specScoreWait = .85;
+    public static double specRetractWait = .65;
     public static boolean isSpec = true;
 
     //Get Sample Color
@@ -322,6 +323,11 @@ public class TransportFSM {
         outLimit = hardwareMap.get(TouchSensor.class, "outLimit");
         intakeToggle = new Toggle(false);
         isSpecToggle = new Toggle(true);
+//        if (isRed) {
+//            isRedToggle = new Toggle(true);
+//        } else {
+//            isRedToggle = new Toggle(false);
+//        }
 
         sampleWait = new ElapsedTime();
         specimenWait = new ElapsedTime();
@@ -359,6 +365,7 @@ public class TransportFSM {
 //
 //        intakeController = new PIDController(intakep, intakei, intaked);
         intake = hardwareMap.get(DcMotorEx.class, "intake");
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
 //        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        intakeController.setPID(intakep, intakei, intaked);
@@ -371,7 +378,6 @@ public class TransportFSM {
 //        flap = hardwareMap.get(ServoImplEx.class, "flap");
 //        flap.setDirection(Servo.Direction.REVERSE);
         bucketPitch = hardwareMap.get(ServoImplEx.class, "bucketPitch");
-        bucketPitch.setDirection(Servo.Direction.REVERSE);
         specClaw = hardwareMap.get(ServoImplEx.class, "specClaw");
         specRot = hardwareMap.get(ServoImplEx.class, "specRot");
         specArm = hardwareMap.get(ServoImplEx.class, "specArm");
@@ -842,14 +848,15 @@ public class TransportFSM {
                 break;
             case OPEN:
                 specClawPos = specClawOpen;
-                specArmPos = specArmClear;
-                if (specimenWait.seconds() > specRetractWait) {
+                if (specimenWait.seconds() > specRetractWait || gamepad1.b) {
                     specimenWait.reset();
                     specimenTransport = SpecimenTransport.PREP_HOME;
                 }
                 break;
             case PREP_HOME:
-                specRotPos = specClawRollIntake;
+                specRotPos = specRotPrep;
+                specClawPos = specClawClosed;
+                specArmPos = specArmClear;
                 if (specimenWait.seconds() > specScoreWait) {
                     specimenTransport = SpecimenTransport.SPECIMEN_HOME;
                 }
