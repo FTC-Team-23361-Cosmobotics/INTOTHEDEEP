@@ -20,9 +20,9 @@ public class SpecimenAuto extends LinearOpMode {
     public static Pose2d obsvPosThree, offsetWallPose, startPose, obsvSevenPre, obsvPreThree, obsvPreInter, obsvFivePre, obsvSixPre, obsvPostThree, obsvPostFour, wallPose, specPose, specPoseTwo, specPoseThree, specPoseFour, specPoseFive, obsvInter, obsvOnePre, obsvOnePost, obsvTwoPre, obsvTwoPost;
 
 
-    public static double startX = 35, startY = -64, startHeading = Math.toRadians(90);
+    public static double startX = 28, startY = -64, startHeading = Math.toRadians(90);
     public static double wallX = 38, wallY = -65.5, wallHeading = Math.toRadians(90), specToWallSpline = Math.toRadians(-90);
-    public static double specX = 1, specY = -33, specHeading = Math.toRadians(90), wallToSpecSpline = Math.toRadians(180);
+    public static double specX = 1, specY = -32, specHeading = Math.toRadians(90), wallToSpecSpline = Math.toRadians(180);
     public static double obsvPreInterX = 8, obsvPreInterY = -36, obsvPreInterHeading = Math.toRadians(90);
 
     public static double obsvInterX = 37, obsvInterY = -32, obsvInterHeading = Math.toRadians(90), obsvInterSpline = Math.toRadians(75);
@@ -33,16 +33,16 @@ public class SpecimenAuto extends LinearOpMode {
     public static double obsvThreePreX = 50, obsvThreePreY = -20, obsvThreePreHeading = Math.toRadians(90);
     public static double obsvPreThreeX = 58, obsvPreThreeY = -15, obsvPreThreeHeading = Math.toRadians(90), obsvThreePreSpline = Math.toRadians(5);
     public static double obsvFourPreX = 62, obsvFourPreY = -30, obsvFourPreHeading = Math.toRadians(90), obsvFourPreSpline = Math.toRadians(-95);
-    public static double obsvTwoPostX = 57, obsvTwoPostY = -44, obsvTwoPostHeading = Math.toRadians(90), obsvTwoPostSpline = Math.toRadians(-95);
+    public static double obsvTwoPostX = 63, obsvTwoPostY = -44, obsvTwoPostHeading = Math.toRadians(90), obsvTwoPostSpline = Math.toRadians(-95);
 
-    public static double obsvFivePreX = 57, obsvFivePreY = -20, obsvFivePreHeading = Math.toRadians(90);
-    public static double obsvSixPreX = 57, obsvSixPreY = -15, obsvSixPreHeading = Math.toRadians(90), obsvSixPreSpline = Math.toRadians(5);
+    public static double obsvFivePreX = 63, obsvFivePreY = -20, obsvFivePreHeading = Math.toRadians(90);
+    public static double obsvSixPreX = 56, obsvSixPreY = -15, obsvSixPreHeading = Math.toRadians(90), obsvSixPreSpline = Math.toRadians(-5);
     public static double obsvSevenPreX = 61, obsvSevenPreY = -10, obsvSevenPreHeading = Math.toRadians(90), obsvSevenPreSpline = Math.toRadians(5);
     public static double obsvThreePostX = 62, obsvThreePostY = -43, obsvThreePostHeading = Math.toRadians(90), obsvThreePostSpline = Math.toRadians(-90);
     public static double offsetWallY = -66;
     public static double specUpWait = .5;
-    public static double specOpenWaitFirst = 1.7;
-    public static double specOpenWait = 1.95;
+    public static double specOpenWaitFirst = 1.75;
+    public static double specOpenWait = 1.85;
     public static double firstObsvWait = .5;
     public static double retractFlickWait = .5;
     public static double secondObsvWait = .1;
@@ -93,7 +93,7 @@ public class SpecimenAuto extends LinearOpMode {
                 .UNSTABLE_addTemporalMarkerOffset(specOpenWaitFirst, () -> {
                     transport.specimenTransport = TransportFSM.SpecimenTransport.OPEN;
                 })
-                .UNSTABLE_addTemporalMarkerOffset(specOpenWait + TransportFSM.specRetractWait - .25, () -> {
+                .UNSTABLE_addTemporalMarkerOffset(specOpenWait + TransportFSM.specRetractWait + .75, () -> {
                     transport.specimenTransport = TransportFSM.SpecimenTransport.PREP_HOME;
                 })
                 .UNSTABLE_addTemporalMarkerOffset(specOpenWait + TransportFSM.specRetractWait - .25 + TransportFSM.specScoreWait - .25, () -> {
@@ -200,6 +200,8 @@ public class SpecimenAuto extends LinearOpMode {
 
         while (opModeInInit() && !isStopRequested()) {
             //TODO: telemetry
+            //TODO: cll resetPosIMU(), possibly implementing something to not cll infinitely
+
             EncoderStorage.isAuto = true;
             transport.sampleTransport = TransportFSM.SampleTransport.SAMPLE_HOME;
             transport.specimenTransport = TransportFSM.SpecimenTransport.INTAKE_SPEC;
