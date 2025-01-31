@@ -15,9 +15,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
+import org.firstinspires.ftc.teamcode.teleop.transport.TransportFSM;
 
 @Autonomous(name = "Pedro Spec Auto", preselectTeleOp = "CosmoboticsTeleOp")
 public class PedroSpecAuto extends OpMode{
+    private TransportFSM transport;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
@@ -116,7 +118,7 @@ public class PedroSpecAuto extends OpMode{
                 .build();
 
         park = new Path(new BezierLine(spec5ScorePoint, parkPoint));
-        park.setConstantHeadingInterpolation(0);
+        park.setConstantHeadingInterpolation(heading);
     }
 
     public void autonomousPathUpdate() {
@@ -215,6 +217,8 @@ public class PedroSpecAuto extends OpMode{
         follower = new Follower(hardwareMap);
         follower.setStartingPose(new Pose(startPoint.getX(), startPoint.getY(), heading));
         buildPaths();
+
+        transport = new TransportFSM(hardwareMap);
     }
 
     @Override
