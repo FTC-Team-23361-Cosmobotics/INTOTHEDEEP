@@ -161,6 +161,7 @@ public class TransportFSM {
 //    public final int empty = 2;
     //PID Values:
     public boolean isHighBucket = true;
+    public boolean depositObsv = false;
 
     public final double extendop = .02, extendoi = .0001, extendod = 0.0001, outp = 0.01, outi = .0001, outd = .0001;
     //    public final double armp = 0, armi = 0, armd = 0, armf = 0;
@@ -607,14 +608,16 @@ public class TransportFSM {
                 if (gamepad1.right_trigger > 0) {
                     sampleTransport = SampleTransport.EXTENDED;
                 }
-                if ((extendoPos <= extended) && gamepad1.left_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                if ((extendoPos <= extended) && gamepad1.right_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
                     sampleWait.reset();
+                    isHighBucket = false;
                     sampleTransport = SampleTransport.TRANSFER;
                 }
-                if (gamepad1.y && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
-                    sampleTransport = SampleTransport.DUMP;
+                if (gamepad1.x && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                    depositObsv = true;
+                    sampleTransport = SampleTransport.EXTENDED;
                 }
-                if (gamepad1.right_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
+                if (gamepad1.left_bumper && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
                     sampleTransport = SampleTransport.HIGH_BUCKET;
                 }
                 break;
@@ -626,6 +629,11 @@ public class TransportFSM {
                 rotPos = rotPrep;
                 extendoTarget = extendoUpper;
                 outWheelPower = dormant;
+                if (depositObsv && extendoPos >= extended + 300) {
+                    specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+                    sampleWait.reset();
+                    sampleTransport = SampleTransport.EMERGENCY_OUTTAKE;
+                }
                 if (gamepad1.left_bumper) {
                     intakeToggle.value = false;
                     sampleWait.reset();
@@ -690,7 +698,12 @@ public class TransportFSM {
                 intakePower = outtaking;
                 rotPos = rotIntake;
                 if (sampleWait.seconds() > emergencyWit) {
-                    sampleTransport = SampleTransport.EXTENDED;
+                    if (depositObsv) {
+                        sampleWait.reset();
+                        sampleTransport = SampleTransport.RETRACTING;
+                    } else {
+                        sampleTransport = SampleTransport.EXTENDED;
+                    }
                 }
                 break;
             case OUTTAKE:
@@ -709,8 +722,8 @@ public class TransportFSM {
                 break;
             case RETRACTING:
                 rotPos = rotHome;
-                outWheelPower = intaking;
-                specimenTransport = SpecimenTransport.SPECIMEN_HOME;
+                outWheelPower = dormant;
+//                specimenTransport = SpecimenTransport.SPECIMEN_HOME;
                 if (sampleWait.seconds() > emergencyWit) {
                     intakePower = dormant;
                     extendoTarget = -5;
@@ -718,7 +731,7 @@ public class TransportFSM {
                 if (gamepad1.left_bumper) {
                     isHighBucket = true;
                 }
-                if (gamepad1.right_bumper) {
+                if (gamepad1.right_bumper || depositObsv) {
                     isHighBucket = false;
                 }
                 if (gamepad1.right_trigger > 0) {
@@ -731,8 +744,9 @@ public class TransportFSM {
                     }
                 } else {
                     if (extendoPos < 50 || gamepad1.y) {
-                        sampleWait.reset();
-                        sampleTransport = SampleTransport.TRANSFER;
+//                        sampleWait.reset();
+                        depositObsv = false;
+                        sampleTransport = SampleTransport.SAMPLE_HOME;
                     }
                 }
                 break;
@@ -745,7 +759,7 @@ public class TransportFSM {
                     if (isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)) {
                         sampleTransport = SampleTransport.HIGH_BUCKET;
                     } else if (!isHighBucket && (specimenTransport == SpecimenTransport.SPECIMEN_HOME || specimenTransport == SpecimenTransport.INTAKE_SPEC)){
-                        sampleTransport = SampleTransport.SAMPLE_HOME;
+                        sampleTransport = SampleTransport.DUMP;
                     } else {
                         sampleTransport = SampleTransport.SAMPLE_HOME;
                     }
